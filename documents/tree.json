@@ -1,0 +1,11 @@
+[
+    {
+        "id": 0,
+        "first": "Léo",
+        "middle": "Chartier",
+        "sex": 1,
+        "dob": "2001/10/27",
+        "pob": "Dijon",
+        "parents": []
+    }
+]
