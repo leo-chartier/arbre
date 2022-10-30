@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Arbre généalogique</title>
 </head>
+
 <body>
-    <h1>Arbre généalogique en cours de création</h1>
+    <canvas id="treeCanvas">
+        Votre navigateur ne supporte pas le tag canvas.
+    </canvas>
+    <h1 id="message">Arbre généalogique en cours de création</h1>
+    <button id="suggest" type="button" onclick="suggestOpen()">Commentaires</button>
 </body>
+
+<script src="js/suggest.js"></script>
+
 </html>
