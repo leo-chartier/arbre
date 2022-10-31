@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <title>Arbre généalogique</title>
+
+    <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="style/suggest.css">
 </head>
 
 <body>
@@ -14,7 +16,61 @@
         Votre navigateur ne supporte pas le tag canvas.
     </canvas>
     <h1 id="message">Arbre généalogique en cours de création</h1>
-    <button id="suggest" type="button" onclick="suggestOpen()">Commentaires</button>
+
+    <button id="suggestBtn" type="button" onclick="suggestOpen()">Commentaires</button>
+    <div class="fade" id="suggestFade">
+        <form id="suggestForm">
+
+            <fieldset>
+                <legend>Message</legend>
+                <label for="suggestType">Type de message</label>
+                <select id="suggestSelect" name="suggestType">
+                    <option value="" disabled hidden selected>Selectionnez une option</option>
+                    <option value="errorTab">Correction d'erreur</option>
+                    <option value="commentTab">Commentaire</option>
+                </select>
+                
+                <div class="formTab" id="errorTab">
+                    <br>
+                    <label for="errorType">Attribut erroné</label>
+                    <select id="errorSelect" name="errorType">
+                        <option value="" disabled hidden selected>Selectionnez une option</option>
+                        <option value="name">Nom/Prénom(s)</option>
+                        <option value="sex">Sex</option>
+                        <option value="birth">Date/lieu de naissance</option>
+                        <option value="death">Date/lieu de mort</option>
+                        <option value="parents">Parents</option>
+                        <option value="spouses">Conjoint</option>
+                    </select>
+                    <br><br>
+                    <label for="errorCorrection">Correction</label>
+                    <input id="correction" type="text" name="errorCorrection" placeholder="Correction">
+                </div>
+
+                <div class="formTab" id="commentTab">
+                    <br>
+                    <label for="comment">Commentaire</label>
+                    <textarea id="comment" name="comment" placeholder="Votre commentaire ici"></textarea>
+                </div>
+            </fieldset>
+
+            <br>
+            
+            <fieldset>
+                <legend>Contact</legend>
+                <label for="email">Email</label>
+                <input id="email" type="email" name="email" placeholder="votre@email.com" required>
+            </fieldset>
+
+            <br>
+            <div class="inlineButtons">
+                <input id="suggestCancel" type="reset" value="Annuler">
+                <input id="suggestSubmit" type="submit" value="Envoyer" disabled>
+            </div>
+
+        </form>
+    </div>
+
 </body>
 
 <script src="js/suggest.js"></script>

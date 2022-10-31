@@ -1,0 +1,63 @@
+#suggestBtn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+
+    background-color: #dff;
+    padding: 10px;
+    border-radius: 100vw;
+    cursor: pointer;
+}
+
+.fade {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #cccc;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s;
+}
+
+#suggestForm {
+    width: 500px;
+    height: 90%;
+    background-color: #f80;
+
+    position: relative;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 15px;
+}
+
+input, textarea, select {
+    width: 100%;
+}
+
+.inlineButtons {
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.inlineButtons > input {
+    display: inline-block;
+    width: auto;
+    padding: 8px 10px;
+    border-width: 1px;
+    border-radius: 100vw;
+}
+
+.inlineButtons > input:hover {
+    cursor: pointer;
+}
+
+#suggestCancel {
+    background-color: #f00;
+}
+
+#suggestSubmit {
+    background-color: #0f0;
+}
