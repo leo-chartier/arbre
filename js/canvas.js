@@ -15,10 +15,82 @@ function draw() {
     ctx.translate(-CANVAS_WIDTH / 2 + cameraOffset.x, -CANVAS_HEIGHT / 2 + cameraOffset.y);
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(-50, -50, 100, 100);
+    drawShape(Shapes.Rectangle, -300, 0, 200, 100);
+    drawShape(Shapes.Circle, 0, 0, 200, 100);
+    drawShape(Shapes.Diamond, 300, 0, 200, 100);
+
+    let firstName = "MyFirstName";
+    let lastName = "MyVeryVeryVeryExtremelyLongLastName";
+    let dob = "01/01/0001";
+    let dod = "31/12/9999";
+    drawText(Shapes.Rectangle, -300, 0, 200, 100, firstName, lastName, dob, dod);
+    drawText(Shapes.Circle, 0, 0, 200, 100, firstName, lastName, dob, dod);
+    drawText(Shapes.Diamond, 300, 0, 200, 100, firstName, lastName, dob, dod);
 
     requestAnimationFrame(draw);
+}
+
+function drawShape(shape, cx, cy, width, height) {
+    let w2 = width / 2;
+    let h2 = height / 2;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "black";
+    switch (shape) {
+
+        case Shapes.Rectangle:
+            ctx.strokeRect(cx - w2, cy - h2, width, height);
+            break;
+
+        case Shapes.Circle:
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, w2, h2, 0, 0, 2 * Math.PI);
+            ctx.stroke();
+            break;
+
+        case Shapes.Diamond:
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - h2);
+            ctx.lineTo(cx + w2, cy);
+            ctx.lineTo(cx, cy + h2);
+            ctx.lineTo(cx - w2, cy);
+            ctx.closePath();
+            ctx.stroke();
+            break;
+
+        default:
+            // TBD
+            break;
+    }
+}
+
+function drawText(shape, cx, cy, cellWidth, cellHeight, firstname, lastname, dob, dod) {
+    let maxWidth;
+    let lineHeight;
+
+    switch (shape) {
+        case Shapes.Rectangle:
+            maxWidth = cellWidth * 0.9;
+            lineHeight = cellHeight / 4 * 0.9;
+            break;
+        case Shapes.Circle:
+            // https://www.desmos.com/calculator/iqbkpxro2q
+            // t = Math.atan(a/b*Math.tan(T))+pi*(Math.floor((T+pi/2)/Math.PI)%2)
+            // Here, T = Math.PI / 4
+            let t = Math.atan(cellWidth / cellHeight);
+            maxWidth = cellWidth * Math.cos(t);
+            lineHeight = cellHeight / 4 * Math.sin(t);
+            break;
+        case Shapes.Diamond:
+            maxWidth = cellWidth / 2 * 0.9;
+            lineHeight = cellHeight / 8 * 0.9;
+            break;
+    }
+
+    ctx.textAlign = "center";
+    lastname = lastname.toUpperCase();
+    ctx.fillText(firstname, cx, cy - 1.5 * lineHeight, maxWidth);
+    ctx.fillText(lastname, cx, cy - 0.5 * lineHeight, maxWidth);
+    ctx.fillText(dob + " - " + dod, cx, cy + 1.5 * lineHeight, maxWidth);
 }
 
 function getEventLocation(event) {
@@ -77,7 +149,7 @@ function handlePinch(event) {
     if (initialPinchDistance == null) {
         initialPinchDistance = currentDistance;
     }
-    
+
     cameraZoom = lastZoom * currentDistance / initialPinchDistance;
     cameraZoom = Math.min(cameraZoom, MAX_ZOOM);
     cameraZoom = Math.max(cameraZoom, MIN_ZOOM);
