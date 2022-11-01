@@ -31,8 +31,8 @@ function suggestClose(event) {
     fader.style.opacity = 0;
 }
 
-var fader = document.getElementById("suggestFade");
-var menu = document.getElementById("suggestSelect");
+let fader = document.getElementById("suggestFade");
+let menu = document.getElementById("suggestSelect");
 
-document.getElementById("suggestSelect").addEventListener("input", suggestType);
+menu.addEventListener("input", suggestType);
 document.getElementById("suggestCancel").addEventListener("click", suggestClose);
