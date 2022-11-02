@@ -15,17 +15,12 @@ function draw() {
     ctx.translate(-CANVAS_WIDTH / 2 + cameraOffset.x, -CANVAS_HEIGHT / 2 + cameraOffset.y);
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    drawShape(Shapes.Rectangle, -300, 0, 200, 100);
-    drawShape(Shapes.Circle, 0, 0, 200, 100);
-    drawShape(Shapes.Diamond, 300, 0, 200, 100);
-
-    let firstName = "MyFirstName";
-    let lastName = "MyVeryVeryVeryExtremelyLongLastName";
-    let dob = "01/01/0001";
-    let dod = "31/12/9999";
-    drawText(Shapes.Rectangle, -300, 0, 200, 100, firstName, lastName, dob, dod);
-    drawText(Shapes.Circle, 0, 0, 200, 100, firstName, lastName, dob, dod);
-    drawText(Shapes.Diamond, 300, 0, 200, 100, firstName, lastName, dob, dod);
+    tree.forEach((row, depth) => {
+        row.forEach(tuple => {
+            drawShape(Shapes.Rectangle, tuple[1], depth*(NODE_HEIGHT+NODE_VERTICAL_SPACING), NODE_WIDTH, NODE_HEIGHT);
+            drawText(Shapes.Rectangle, tuple[1], depth*(NODE_HEIGHT+NODE_VERTICAL_SPACING), NODE_WIDTH, NODE_HEIGHT, tuple[0], "", "", "");
+        });
+    });
 
     requestAnimationFrame(draw);
 }

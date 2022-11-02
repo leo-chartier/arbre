@@ -13,3 +13,9 @@ var Shapes = {
     Circle: 2,
     Diamond: 3,
 }
+
+var tree;
+var NODE_WIDTH = 200;
+var NODE_HEIGHT = 100;
+var NODE_HORIZONTAL_SPACING = 100;
+var NODE_VERTICAL_SPACING = 100;
