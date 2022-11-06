@@ -14,6 +14,7 @@ var Shapes = {
     Diamond: 3,
 }
 
+var json = [{"id":0,"first":"Léo","last":"Chartier","sex":1,"dob":"2001/10/27","pob":"Dijon","parents":[],"spouses":[1]},{"id":1,"first":"Prénom","last":"Nom","sex":2,"spouses":[0]},{"id":2,"first":"Alice","sex":2,"parents":[0,1]},{"id":3,"first":"Bob","sex":1,"parents":[0,1]},{"id":4,"first":"Charlie","sex":3,"parents":[0,1]}];
 var tree;
 var NODE_WIDTH = 200;
 var NODE_HEIGHT = 100;
