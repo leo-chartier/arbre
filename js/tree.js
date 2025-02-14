@@ -16,7 +16,7 @@ function generate(id, generations = {}, depth = 0, done = [], initiator = null) 
             parents[sex].push(parent.id);
         }
     }
-    
+
     let spouses = { 1: [], 2: [], 3: [] };
     if (person.spouses) {
         for (let i = 0; i < person.spouses.length; i++) {
@@ -27,7 +27,7 @@ function generate(id, generations = {}, depth = 0, done = [], initiator = null) 
             spouses[sex].push(spouse.id);
         }
     }
-    
+
     let children = [];
     for (let i = 0; i < json.length; i++) {
         let child = json[i];
@@ -35,14 +35,14 @@ function generate(id, generations = {}, depth = 0, done = [], initiator = null) 
     }
 
     order = [
-        [parents[1], depth-1], // Father
+        [parents[1], depth - 1], // Father
         [spouses[1], depth], // Husband
         [null, depth], // Self
-        [children, depth+1], // Children
+        [children, depth + 1], // Children
         [spouses[2], depth], // Wifes
         [spouses[3], depth], // Other spouses
-        [parents[2], depth-1], // Mother
-        [parents[3], depth-1] // Other parents
+        [parents[2], depth - 1], // Mother
+        [parents[3], depth - 1] // Other parents
     ];
     order.forEach(tuple => {
         let [ids, d] = tuple;
@@ -63,7 +63,7 @@ function generate(id, generations = {}, depth = 0, done = [], initiator = null) 
 }
 
 function place(generations) {
-    // TODO: Full implementation
+    // TODO: Full implementation with spacing
 
     let tree = [];
     Object.keys(generations).slice().sort().forEach(gen => {
@@ -71,11 +71,73 @@ function place(generations) {
         tree.push([]);
         for (let i = 0; i < generations[gen].length; i++) {
             let id = generations[gen][i];
-            tree[tree.length-1].push([id, i*(NODE_WIDTH+NODE_HORIZONTAL_SPACING)]);
+            tree[tree.length - 1].push([id, i * (NODE_WIDTH + NODE_HORIZONTAL_SPACING)]);
         }
 
     });
     return tree
+}
+
+function connect(generations, tree) {
+    let families = {};
+    Object.keys(generations).forEach(gen => {
+        generations[gen].forEach(id => {
+            let person = get(id);
+
+            if (person.parents == undefined || person.parents.length == 0) return;
+            let parents = JSON.stringify(person.parents.slice().sort());
+
+            if (families[parents] == undefined) families[parents] = [];
+            families[parents].push(id);
+        });
+    });
+
+    let connections = [];
+    let parentOffset = NODE_HEIGHT / 2 + NODE_VERTICAL_SPACING / 3;
+    let childrenOffset = NODE_HEIGHT / 2 + NODE_VERTICAL_SPACING * 2 / 3;
+    Object.entries(families).forEach(([parentsStr, childrenIds]) => {
+        let entry = {}
+
+        entry["parents"] = JSON.parse(parentsStr);
+        let parents = entry["parents"].map(id => {
+            let depth, index, [id_, x] = locate(id, tree);
+            return [depth * (NODE_HEIGHT + NODE_VERTICAL_SPACING) + parentOffset, x];
+        });
+        parents.sort((a, b) => a[0] - b[0]);
+        entry["from"] = parents;
+
+        childrenIds.sort();
+        entry["children"] = childrenIds;
+        let children = childrenIds.map(id => {
+            let depth, index, [id_, x] = locate(id, tree);
+            return [depth * (NODE_HEIGHT + NODE_VERTICAL_SPACING) + childrenOffset, x];
+        });
+        children.sort((a, b) => a[0] - b[0]);
+        entry["to"] = children;
+
+        let fromX = parents.reduce((acc, coord) => acc + coord[0], 0) / parents.length;
+        let toX = children.reduce((acc, coord) => acc + coord[0], 0) / children.length;
+        let fromIndex = 1;
+        let toIndex = 1;
+        for (; fromIndex < parents.length; fromIndex++) {
+            if (parents[fromIndex][0] < fromX) break;
+        }
+        for (; toIndex < children.length; toIndex++) {
+            if (children[toIndex][0] < toX) break;
+        }
+        function LERP(x, p0, p1) {
+            // y0 + (x - x0)(y1 - y0) / (x1 - x0)
+            console.log(x, p0, p1);
+            return p0[1] + (x - p0[0])*(p1[1]-p0[1])/(p1[0]-p0[0]);
+        }
+        let fromY = LERP(fromX, parents[fromIndex-1], parents[fromIndex]);
+        let toY = LERP(toX, children[fromIndex-1], children[fromIndex]);
+        entry["connection"] = [fromX, fromY, toX, toY];
+
+        connections.push(entry);
+    });
+
+    return connections;
 }
 
 function get(id) {
@@ -99,3 +161,5 @@ function locate(id, tree) {
 let generations = generate(root)[0];
 tree = place(generations);
 console.log(tree);
+connections = connect(generations, tree);
+console.log(connections);
