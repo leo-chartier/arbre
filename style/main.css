@@ -1,22 +1,22 @@
 html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
 }
 
 #treeCanvas {
-    /* Size set with JS */
-    /* width: 100%;
+  /* Size set with JS */
+  /* width: 100%;
     height: 100%; */
 }
 
 #message {
-    position: absolute;
-    top: 0;
+  position: absolute;
+  top: 0;
 }

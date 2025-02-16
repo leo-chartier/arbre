@@ -2,44 +2,44 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbre généalogique</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arbre généalogique</title>
 
-    <link rel="stylesheet" href="style/main.css">
-    <link rel="stylesheet" href="style/contact.css">
+  <link rel="stylesheet" href="style/main.css">
+  <link rel="stylesheet" href="style/contact.css">
 </head>
 
 <body>
-    <canvas id="treeCanvas">
-        Votre navigateur ne supporte pas le tag canvas.
-    </canvas>
-    <h1 id="message">Arbre généalogique en cours de création</h1>
+  <canvas id="treeCanvas">
+    Votre navigateur ne supporte pas le tag canvas.
+  </canvas>
+  <h1 id="message">Arbre généalogique en cours de création</h1>
 
-    <button id="openForm" type="button" onclick="contactOpen()">Contact</button>
-    <div id="contactFader">
-        <form id="contactForm">
-            <button id="closeForm" type="button" onclick="contactClose()">×</button>
-            <h2>Formulaire de contact</h2>
+  <button id="openForm" type="button" onclick="contactOpen()">Contact</button>
+  <div id="contactFader">
+    <form id="contactForm">
+      <button id="closeForm" type="button" onclick="contactClose()">×</button>
+      <h2>Formulaire de contact</h2>
 
-            <label for="formName">Nom/Prénom</label>
-            <input id="formName" name="name" type="text" placeholder="Jean DUPONT" required>
+      <label for="formName">Nom/Prénom</label>
+      <input id="formName" name="name" type="text" placeholder="Jean DUPONT" required>
 
-            <label for="formSubject">Type de message</label>
-            <select id="formSubject" name="subject" required>
-                <option value="" disabled hidden selected>Sélectionnez une option</option>
-                <option value="Ajout">Ajout</option>
-                <option value="Correction">Correction d'erreur</option>
-                <option value="Commentaire">Commentaire</option>
-            </select>
+      <label for="formSubject">Type de message</label>
+      <select id="formSubject" name="subject" required>
+        <option value="" disabled hidden selected>Sélectionnez une option</option>
+        <option value="Ajout">Ajout</option>
+        <option value="Correction">Correction d'erreur</option>
+        <option value="Commentaire">Commentaire</option>
+      </select>
 
-            <label for="formMessage">Message</label>
-            <textarea id="formMessage" name="message" required></textarea>
+      <label for="formMessage">Message</label>
+      <textarea id="formMessage" name="message" required></textarea>
 
-            <a id="contactSubmit" target="_blank">Envoyer par email</a>
-        </form>
-    </div>
+      <a id="contactSubmit" target="_blank">Envoyer par email</a>
+    </form>
+  </div>
 
 </body>
 
