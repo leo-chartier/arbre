@@ -146,13 +146,17 @@ function handlePinch(event) {
   cameraZoom = (lastZoom * currentDistance) / initialPinchDistance;
   cameraZoom = Math.min(cameraZoom, MAX_ZOOM);
   cameraZoom = Math.max(cameraZoom, MIN_ZOOM);
+
+  requestAnimationFrame(draw);
 }
 
 function adjustZoom(event) {
   if (isDragging) return;
-  cameraZoom += event.deltaY * SCROLL_SENSITIVITY;
+  cameraZoom -= event.deltaY * SCROLL_SENSITIVITY;
   cameraZoom = Math.min(cameraZoom, MAX_ZOOM);
   cameraZoom = Math.max(cameraZoom, MIN_ZOOM);
+
+  requestAnimationFrame(draw);
 }
 
 canvas.addEventListener("mousedown", onPointerDown);
