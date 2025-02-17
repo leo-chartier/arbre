@@ -18,102 +18,70 @@ function draw() {
   );
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  tree.forEach((row, depth) => {
-    row.forEach((tuple) => {
-      drawShape(
-        Shapes.Rectangle,
-        tuple[1],
-        depth * (NODE_HEIGHT + NODE_VERTICAL_SPACING),
-        NODE_WIDTH,
-        NODE_HEIGHT
-      );
-      drawText(
-        Shapes.Rectangle,
-        tuple[1],
-        depth * (NODE_HEIGHT + NODE_VERTICAL_SPACING),
-        NODE_WIDTH,
-        NODE_HEIGHT,
-        tuple[0],
-        "",
-        "",
-        ""
-      );
-    });
-  });
-
-  requestAnimationFrame(draw);
+  drawPerson(0); // TEMP
 }
 
-function drawShape(shape, cx, cy, width, height) {
-  let w2 = width / 2;
-  let h2 = height / 2;
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "black";
-  switch (shape) {
-    case Shapes.Rectangle:
-      ctx.strokeRect(cx - w2, cy - h2, width, height);
-      break;
+const PFP_ASPECT_RATIO = 2/3; // Profile picture
+const PROFILE_WIDTH = 500;
+const PROFILE_HEIGHT = 150;
 
-    case Shapes.Circle:
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, w2, h2, 0, 0, 2 * Math.PI);
-      ctx.stroke();
-      break;
+// TODO: Dynamically get each pfp
+let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
+pfp.onload = () => requestAnimationFrame(draw);
+pfp.src = `https://gravatar.com/avatar/000000000000000000000000000000000000000000000000000000?d=mp&s=${PROFILE_HEIGHT}`;
 
-    case Shapes.Diamond:
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - h2);
-      ctx.lineTo(cx + w2, cy);
-      ctx.lineTo(cx, cy + h2);
-      ctx.lineTo(cx - w2, cy);
-      ctx.closePath();
-      ctx.stroke();
-      break;
+const dateFormatter = new Intl.DateTimeFormat("fr-FR");
 
-    default:
-      // TBD
-      break;
-  }
-}
-
-function drawText(
-  shape,
-  cx,
-  cy,
-  cellWidth,
-  cellHeight,
-  firstname,
-  lastname,
-  dob,
-  dod
-) {
-  let maxWidth;
-  let lineHeight;
-
-  switch (shape) {
-    case Shapes.Rectangle:
-      maxWidth = cellWidth * 0.9;
-      lineHeight = (cellHeight / 4) * 0.9;
-      break;
-    case Shapes.Circle:
-      // https://www.desmos.com/calculator/iqbkpxro2q
-      // t = Math.atan(a/b*Math.tan(T))+pi*(Math.floor((T+pi/2)/Math.PI)%2)
-      // Here, T = Math.PI / 4
-      let t = Math.atan(cellWidth / cellHeight);
-      maxWidth = cellWidth * Math.cos(t);
-      lineHeight = (cellHeight / 4) * Math.sin(t);
-      break;
-    case Shapes.Diamond:
-      maxWidth = (cellWidth / 2) * 0.9;
-      lineHeight = (cellHeight / 8) * 0.9;
-      break;
+function drawPerson(id) {
+  // TODO: Get proper values
+  let cx = 0;
+  let cy = 0;
+  let firstname = "Firstname";
+  let lastname = "LASTNAME";
+  let sex = Sex.OTHER;
+  let dob = new Date(0);
+  let dod = null;
+  // let pfp;
+  
+  let lines = [
+    `${firstname} ${lastname.toUpperCase()}`,
+    "",
+    dob ? `* ${dateFormatter.format(dob)}` : "",
+    dod ? `\u2020 ${dateFormatter.format(dod)}` : "",
+  ];
+  
+  // Backgrounds
+  let x0 = cx - PROFILE_WIDTH / 2;
+  let y0 = cy - pfp.height / 2;
+  ctx.fillStyle = SEX_COLORS[sex];
+  ctx.fillRect(x0, y0, pfp.width, pfp.height);
+  ctx.fillStyle = "white";
+  ctx.fillRect(x0 + pfp.width, y0, PROFILE_WIDTH - pfp.width, pfp.height);
+  
+  // Draw the pfp covering the frame and cropping the overflow
+  if (pfp.naturalWidth / pfp.naturalHeight > PFP_ASPECT_RATIO) {
+    let padding = pfp.naturalWidth - pfp.width * pfp.naturalHeight / pfp.height;
+    ctx.drawImage(pfp, padding / 2, 0, pfp.naturalWidth - padding, pfp.naturalHeight, x0, y0, pfp.width, pfp.height);
+  } else {
+    let padding = pfp.naturalHeight - pfp.height * pfp.naturalWidth / pfp.width;
+    ctx.drawImage(pfp, 0, padding / 2, pfp.naturalWidth, pfp.naturalHeight - padding, x0, y0, pfp.width, pfp.height);
   }
 
+  // Borders
+  ctx.fillStyle = "black";
+  ctx.strokeRect(x0, y0, pfp.width, pfp.height);
+  ctx.strokeRect(x0 + pfp.width, y0, PROFILE_WIDTH - pfp.width, pfp.height);
+
+  // Text
+  let maxWidth = (PROFILE_WIDTH - pfp.width) * 0.9;
+  let lineHeight = (PROFILE_HEIGHT / lines.length) * 0.9;
+  let x1 = cx + pfp.width / 2;
+  let y1 = cy - (lines.length - 1) * lineHeight / 2;
+  ctx.font = `${lineHeight*0.75}px Arial`;
   ctx.textAlign = "center";
-  lastname = lastname.toUpperCase();
-  ctx.fillText(firstname, cx, cy - 1.5 * lineHeight, maxWidth);
-  ctx.fillText(lastname, cx, cy - 0.5 * lineHeight, maxWidth);
-  ctx.fillText(dob + " - " + dod, cx, cy + 1.5 * lineHeight, maxWidth);
+  for (let [i, line] of lines.entries()) {
+    ctx.fillText(line, x1, y1 + i * lineHeight, maxWidth);
+  }
 }
 
 function getEventLocation(event) {
@@ -139,6 +107,8 @@ function onPointerMove(event) {
   if (!isDragging) return;
   cameraOffset.x = getEventLocation(event).x / cameraZoom - dragStart.x;
   cameraOffset.y = getEventLocation(event).y / cameraZoom - dragStart.y;
+
+  requestAnimationFrame(draw);
 }
 
 function onPointerUp(event) {

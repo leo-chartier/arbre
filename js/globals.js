@@ -7,11 +7,15 @@ var MAX_ZOOM = 5;
 var MIN_ZOOM = 0.2;
 var SCROLL_SENSITIVITY = 0.0005;
 
-var Shapes = {
-  Unkown: 0,
-  Rectangle: 1,
-  Circle: 2,
-  Diamond: 3,
+const Sex = {
+  MALE: 1,
+  FEMALE: 2,
+  OTHER: 3,
+};
+const SEX_COLORS = {
+  [Sex.MALE]: "blue",
+  [Sex.FEMALE]: "hotpink",
+  [Sex.OTHER]: "gray",
 };
 
 var json = [
@@ -19,7 +23,7 @@ var json = [
     id: 0,
     first: "Léo",
     last: "Chartier",
-    sex: 1,
+    sex: Sex.Male,
     dob: "2001/10/27",
     pob: "Dijon",
     parents: [],
@@ -29,12 +33,12 @@ var json = [
     id: 1,
     first: "Prénom",
     last: "Nom",
-    sex: 2,
+    sex: Sex.Female,
     spouses: [0],
   },
-  { id: 2, first: "Alice", sex: 2, parents: [0, 1] },
-  { id: 3, first: "Bob", sex: 1, parents: [0, 1] },
-  { id: 4, first: "Charlie", sex: 3, parents: [0, 1] },
+  { id: 2, first: "Alice", sex: Sex.Female, parents: [0, 1] },
+  { id: 3, first: "Bob", sex: Sex.Male, parents: [0, 1] },
+  { id: 4, first: "Charlie", sex: Sex.Female, parents: [0, 1] },
 ];
 var tree;
 var connections;
