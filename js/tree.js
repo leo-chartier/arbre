@@ -1,5 +1,29 @@
 let root = 3;
 
+/** @type {Array<Person>} */
+let json = [
+  {
+    id: 0,
+    first: "Léo",
+    last: "Chartier",
+    sex: Gender.MALE,
+    dob: "2001/10/27",
+    pob: "Dijon",
+    parents: [],
+    spouses: [1],
+  },
+  {
+    id: 1,
+    first: "Prénom",
+    last: "Nom",
+    sex: Gender.FEMALE,
+    spouses: [0],
+  },
+  { id: 2, first: "Alice", sex: Gender.FEMALE, parents: [0, 1] },
+  { id: 3, first: "Bob", sex: Gender.MALE, parents: [0, 1] },
+  { id: 4, first: "Charlie", sex: Gender.OTHER, parents: [0, 1] },
+];
+
 function generate(id, generations = {}, depth = 0, done = [], initiator = null) {
   let person = get(id);
   if (person == null || done.indexOf(id) != -1) return [generations, done];
@@ -58,6 +82,12 @@ function generate(id, generations = {}, depth = 0, done = [], initiator = null) 
 
   return [generations, done];
 }
+
+// TODO: Use relative units (how many spacing units) and let draw.js do the calculation for the number of pixels
+let NODE_WIDTH = 200;
+let NODE_HEIGHT = 100;
+let NODE_HORIZONTAL_SPACING = 100;
+let NODE_VERTICAL_SPACING = 100;
 
 function place(generations) {
   // TODO: Full implementation with spacing

@@ -1,5 +1,9 @@
 // Adapted from https://codepen.io/chengarda/pen/wRxoyB
 
+const MAX_ZOOM = 5;
+const MIN_ZOOM = 0.2;
+const SCROLL_SENSITIVITY = 0.0005;
+
 /**
  * A coordinate on the canvas.
  * @typedef {Object} Coordinates
@@ -8,12 +12,12 @@
  */
 
 /** The canvas. */
-let canvas = document.getElementById("canvas");
+let canvas = document.getElementById("treeCanvas");
 /**
  * The position of the camera on the canvas.
  * @type {Coordinates}
  */
-let cameraOffset = { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT / 2 };
+let cameraOffset = { x: document.body.clientWidth / 2, y: document.body.clientHeight / 2 };
 /** The zoom level of the camera. */
 let cameraZoom = 1;
 /** Whether the user is dragging the canvas. */

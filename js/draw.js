@@ -5,7 +5,23 @@ const PROFILE_WIDTH = 500;
 /** The height of a profile. */
 const PROFILE_HEIGHT = 150;
 /** The formatter to display dates */
-const dateFormatter = new Intl.DateTimeFormat("fr-FR");
+const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR");
+/**
+ * The rendering context.
+ * @type {CanvasRenderingContext2D}
+ */
+let ctx = canvas.getContext("2d");
+
+/**
+ * The colors associated with each gender.
+ * @type {Object<Gender, string>}
+ */
+const GENDER_COLORS = {
+  [Gender.OTHER]: "gray",
+  [Gender.MALE]: "blue",
+  [Gender.FEMALE]: "hotpink",
+  [Gender.OTHER]: "tan",
+};
 
 // TODO: Dynamically get each pfp
 let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
@@ -16,8 +32,8 @@ pfp.src = `https://gravatar.com/avatar/00000000000000000000000000000000000000000
  * Draws the tree on the canvas.
  */
 function draw() {
-  CANVAS_WIDTH = document.body.clientWidth;
-  CANVAS_HEIGHT = document.body.clientHeight;
+  let CANVAS_WIDTH = document.body.clientWidth;
+  let CANVAS_HEIGHT = document.body.clientHeight;
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
 
@@ -43,7 +59,7 @@ function drawPerson(id) {
   let cy = 0;
   let firstname = "Firstname";
   let lastname = "LASTNAME";
-  let sex = Sex.OTHER;
+  let gender = Gender.OTHER;
   let dob = new Date(0);
   let dod = null;
   // let pfp;
@@ -51,14 +67,14 @@ function drawPerson(id) {
   let lines = [
     `${firstname} ${lastname.toUpperCase()}`,
     "",
-    dob ? `* ${dateFormatter.format(dob)}` : "",
-    dod ? `\u2020 ${dateFormatter.format(dod)}` : "",
+    dob ? `* ${DATE_FORMATTER.format(dob)}` : "",
+    dod ? `\u2020 ${DATE_FORMATTER.format(dod)}` : "",
   ];
   
   // Backgrounds
   let x0 = cx - PROFILE_WIDTH / 2;
   let y0 = cy - pfp.height / 2;
-  ctx.fillStyle = SEX_COLORS[sex];
+  ctx.fillStyle = GENDER_COLORS[gender];
   ctx.fillRect(x0, y0, pfp.width, pfp.height);
   ctx.fillStyle = "white";
   ctx.fillRect(x0 + pfp.width, y0, PROFILE_WIDTH - pfp.width, pfp.height);
