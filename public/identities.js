@@ -1,0 +1,31 @@
+const IDENTITIES = [
+  {
+    "id": "0",
+    "firstnames": "Léo",
+    "lastname": "CHARTIER",
+    "gender": 1,
+    "dob": "2001/10/27",
+    "pob": "Dijon"
+  },
+  {
+    "id": "1",
+    "firstnames": "Prénom",
+    "lastname": "NOM",
+    "gender": 2
+  },
+  {
+    "id": "2",
+    "firstnames": "Alice",
+    "gender": 2
+  },
+  {
+    "id": "3",
+    "firstnames": "Bob",
+    "gender": 1
+  },
+  {
+    "id": "4",
+    "firstnames": "Charlie",
+    "gender": 3
+  }
+];

@@ -1,27 +1,50 @@
 let root = 3;
 
-/** @type {Array<Person>} */
-let json = [
+// TODO: Actual data import
+
+/** @type {Identity[]} */
+let identities = [
   {
     id: 0,
-    first: "Léo",
-    last: "Chartier",
-    sex: Gender.MALE,
+    firstnames: "Léo",
+    lastname: "CHARTIER",
+    gender: 1,
     dob: "2001/10/27",
     pob: "Dijon",
-    parents: [],
-    spouses: [1],
   },
   {
     id: 1,
-    first: "Prénom",
-    last: "Nom",
-    sex: Gender.FEMALE,
-    spouses: [0],
+    firstnames: "Prénom",
+    lastname: "NOM",
+    gender: 2,
   },
-  { id: 2, first: "Alice", sex: Gender.FEMALE, parents: [0, 1] },
-  { id: 3, first: "Bob", sex: Gender.MALE, parents: [0, 1] },
-  { id: 4, first: "Charlie", sex: Gender.OTHER, parents: [0, 1] },
+  {
+    id: 2,
+    firstnames: "Alice",
+    gender: 2,
+  },
+  {
+    id: 3,
+    firstnames: "Bob",
+    gender: 1,
+  },
+  {
+    id: 4,
+    firstnames: "Charlie",
+    gender: 3,
+  },
+];
+
+/** @type {Union[]} */
+let unions = [
+  {
+    parent1: 0,
+    parent2: 1,
+    dom: "2000/01/01",
+    pom: "Listenbourg",
+    dod: "2000/12/31",
+    children: [2, 3, 4],
+  },
 ];
 
 function generate(id, generations = {}, depth = 0, done = [], initiator = null) {
