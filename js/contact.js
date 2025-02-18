@@ -1,11 +1,20 @@
+/**
+ * Show the contact form.
+ */
 function contactOpen() {
   document.getElementById("contactFader").setAttribute("open", "");
 }
 
+/**
+ * Hide the contact form.
+ */
 function contactClose() {
   document.getElementById("contactFader").removeAttribute("open");
 }
 
+/**
+ * Send an email with the form's content.
+ */
 function updateMailto() {
   let name = document.getElementById("formName").value.trim();
   let subjectField = document.getElementById("formSubject");

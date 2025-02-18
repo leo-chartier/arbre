@@ -1,12 +1,6 @@
 let root = 3;
 
-function generate(
-  id,
-  generations = {},
-  depth = 0,
-  done = [],
-  initiator = null
-) {
+function generate(id, generations = {}, depth = 0, done = [], initiator = null) {
   let person = get(id);
   if (person == null || done.indexOf(id) != -1) return [generations, done];
 
@@ -14,8 +8,7 @@ function generate(
 
   let parents = { 1: [], 2: [], 3: [] };
   if (person.parents) {
-    for (let i = 0; i < person.parents.length; i++) {
-      let parent = get(person.parents[i]);
+    for (let parent of person.parents) {
       if (parent == null) continue;
       let sex = parent.sex;
       if (!(1 <= sex && sex <= 3)) sex = 3;
@@ -25,8 +18,7 @@ function generate(
 
   let spouses = { 1: [], 2: [], 3: [] };
   if (person.spouses) {
-    for (let i = 0; i < person.spouses.length; i++) {
-      let spouse = get(person.spouses[i]);
+    for (let spouse of person.spouses) {
       if (spouse == null) continue;
       let sex = spouse.sex;
       if (!(1 <= sex && sex <= 3)) sex = 3;
@@ -35,13 +27,11 @@ function generate(
   }
 
   let children = [];
-  for (let i = 0; i < json.length; i++) {
-    let child = json[i];
-    if (child.parents && child.parents.indexOf(person.id) != -1)
-      children.push(child.id);
+  for (let child of json) {
+    if (child.parents && child.parents.indexOf(person.id) != -1) children.push(child.id);
   }
 
-  order = [
+  let order = [
     [parents[1], depth - 1], // Father
     [spouses[1], depth], // Husband
     [null, depth], // Self
@@ -80,10 +70,7 @@ function place(generations) {
       tree.push([]);
       for (let i = 0; i < generations[gen].length; i++) {
         let id = generations[gen][i];
-        tree[tree.length - 1].push([
-          id,
-          i * (NODE_WIDTH + NODE_HORIZONTAL_SPACING),
-        ]);
+        tree[tree.length - 1].push([id, i * (NODE_WIDTH + NODE_HORIZONTAL_SPACING)]);
       }
     });
   return tree;
@@ -125,18 +112,13 @@ function connect(generations, tree) {
       let depth,
         index,
         [id_, x] = locate(id, tree);
-      return [
-        depth * (NODE_HEIGHT + NODE_VERTICAL_SPACING) + childrenOffset,
-        x,
-      ];
+      return [depth * (NODE_HEIGHT + NODE_VERTICAL_SPACING) + childrenOffset, x];
     });
     children.sort((a, b) => a[0] - b[0]);
     entry["to"] = children;
 
-    let fromX =
-      parents.reduce((acc, coord) => acc + coord[0], 0) / parents.length;
-    let toX =
-      children.reduce((acc, coord) => acc + coord[0], 0) / children.length;
+    let fromX = parents.reduce((acc, coord) => acc + coord[0], 0) / parents.length;
+    let toX = children.reduce((acc, coord) => acc + coord[0], 0) / children.length;
     let fromIndex = 1;
     let toIndex = 1;
     for (; fromIndex < parents.length; fromIndex++) {
