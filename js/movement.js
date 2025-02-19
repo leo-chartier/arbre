@@ -4,13 +4,6 @@ const MAX_ZOOM = 5;
 const MIN_ZOOM = 0.2;
 const SCROLL_SENSITIVITY = 0.0005;
 
-/**
- * A coordinate on the canvas.
- * @typedef {Object} Coordinates
- * @property {number} x - The X component
- * @property {number} y - The Y component
- */
-
 /** The canvas. */
 let canvas = document.getElementById("treeCanvas");
 /**

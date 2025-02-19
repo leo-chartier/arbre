@@ -13,7 +13,7 @@ const Gender = {
 /**
  * A person's identification data.
  * @typedef {Object} Identity
- * @property {number} id - Their unique identifier.
+ * @property {string} id - Their unique identifier.
  * @property {?string} firstnames - Their first names.
  * @property {?string} lastname - Their last name.
  * @property {?Gender} gender - Their gender.
@@ -26,10 +26,43 @@ const Gender = {
 /**
  * A couple's union data.
  * @typedef {Object} Union
- * @property {number} parent1 - The first person.
- * @property {?number} parent2 - The second person.
+ * @property {string} parent1 - The first person.
+ * @property {?string} parent2 - The second person.
  * @property {?string} dom - Their date of marriage.
  * @property {?string} pom - Their place of marriage.
  * @property {?string} dod - Their date of divorce.
- * @property {?number[]} children - The IDs of their children.
+ * @property {?string[]} children - The IDs of their children.
+ */
+
+/**
+ * Enum for relation between two people
+ * @readonly
+ * @enum {number}
+ */
+const Relation = {
+  ROOT: 0,
+  PARENT: 1,
+  CHILD: 2,
+  SPOUSE: 3,
+};
+
+/**
+ * A coordinate on the canvas.
+ * @typedef {Object} Coordinates
+ * @property {number} x - The X component
+ * @property {number} y - The Y component
+ */
+
+/**
+ * A relationship model with coordinates.
+ * @typedef {Object} GraphEntry
+ * @property {string} id - Their unique identifier.
+ * @property {string} predecessor - The ID of the person one step closer to the root.
+ * @property {Relation} relation - Who this person is to their predecessor.
+ * @property {number} depth - The minimal number of steps to reach the root.
+ * @property {Coordinates} position - The position of their profile, in relative units (not pixels).
+ */
+
+/**
+ * @typedef {Object<string, GraphEntry>} Graph
  */
