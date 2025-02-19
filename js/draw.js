@@ -28,6 +28,8 @@ let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
 pfp.onload = () => requestAnimationFrame(draw);
 pfp.src = `https://gravatar.com/avatar/000000000000000000000000000000000000000000000000000000?d=mp&s=${PROFILE_HEIGHT}`;
 
+let graph = generate("0", UNIONS); // TEMP
+
 /**
  * Draws the tree on the canvas.
  */
@@ -46,35 +48,35 @@ function draw() {
   );
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  drawPerson(0); // TEMP
+  // TODO: Don't draw if outside of screen
+  // TODO: Draw connections lines
+  Object.entries(graph).forEach(([id, entry]) => drawPerson(IDENTITIES[id], entry.position));
 }
 
 /**
  * Draws a single person.
- * @param {number} id - ID of the person to draw
+ * @param {Identity} identity - Data about the person.
+ * @param {Coordinates} position - Unscaled position for the profile.
  */
-function drawPerson(id) {
-  // TODO: Get proper values
-  let cx = 0;
-  let cy = 0;
-  let firstname = "Firstname";
-  let lastname = "LASTNAME";
-  let gender = Gender.OTHER;
-  let dob = new Date(0);
-  let dod = null;
+function drawPerson(identity, position) {
+  // TODO: Get proper pfp
   // let pfp;
+
+  if (!identity || !position) return;
   
   let lines = [
-    `${firstname} ${lastname.toUpperCase()}`,
+    `${identity.firstnames || "?"} ${identity.lastname?.toUpperCase() || "?"}`,
     "",
-    dob ? `* ${DATE_FORMATTER.format(dob)}` : "",
-    dod ? `\u2020 ${DATE_FORMATTER.format(dod)}` : "",
+    identity.dob ? `* ${DATE_FORMATTER.format(Date.parse(identity.dob))}` : "",
+    identity.dod ? `\u2020 ${DATE_FORMATTER.format(Date.parse(identity.dod))}` : "",
   ];
   
   // Backgrounds
+  let cx = PROFILE_WIDTH * position.x;
+  let cy = PROFILE_HEIGHT * position.y;
   let x0 = cx - PROFILE_WIDTH / 2;
   let y0 = cy - pfp.height / 2;
-  ctx.fillStyle = GENDER_COLORS[gender];
+  ctx.fillStyle = GENDER_COLORS[identity.gender];
   ctx.fillRect(x0, y0, pfp.width, pfp.height);
   ctx.fillStyle = "white";
   ctx.fillRect(x0 + pfp.width, y0, PROFILE_WIDTH - pfp.width, pfp.height);
