@@ -50,7 +50,7 @@ function draw() {
 
   // TODO: Don't draw if outside of screen
   // TODO: Draw connections lines
-  Object.entries(graph).forEach(([id, entry]) => drawPerson(IDENTITIES[id], entry.position));
+  Object.values(graph).forEach((entry) => drawPerson(IDENTITIES.find(person => person.id == entry.id), entry.position));
 }
 
 /**
