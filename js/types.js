@@ -60,9 +60,18 @@ const Relation = {
  * @property {string} predecessor - The ID of the person one step closer to the root.
  * @property {Relation} relation - Who this person is to their predecessor.
  * @property {number} depth - The minimal number of steps to reach the root.
- * @property {Coordinates} position - The position of their profile, in relative units (not pixels).
+ * @property {?Coordinates} place - The place of their profile, if all profiles were stored in a jaggered array.
+ * @property {?Coordinates} position - The position of their profile, in relative units (not pixels).
  */
 
 /**
  * @typedef {Object<string, GraphEntry>} Graph
+ */
+
+/**
+ * 
+ * @typedef {Object} Relatives
+ * @property {string[]} parents - The parents' IDs of the person.
+ * @property {string[]} spouses - The spouses' IDs of the person.
+ * @property {string[]} children - The children' IDs of the person.
  */
