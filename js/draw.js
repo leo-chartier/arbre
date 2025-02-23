@@ -49,12 +49,55 @@ function draw() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   // TODO: Don't draw if outside of screen
-  // TODO: Draw connections lines
+  ctx.beginPath();
+  UNIONS.forEach((union) => drawLines(union, graph));
+  ctx.stroke();
   Object.values(graph).forEach((entry) => drawPerson(IDENTITIES.find(person => person.id == entry.id), entry.position));
 }
 
 /**
- * Draws a single person.
+ * Draw the connections for a union.
+ * @param {Union} union - The union for which the lines should be drawn.
+ * @param {Graph} graph - The graph containing the position of each profile.
+ */
+function drawLines(union, graph) {
+  // Prepare values
+  let parents = [union.parent1, union.parent2]
+    .filter((id) => id != null)
+    .map((id) => graph[id])
+    .sort((person) => person.position.x);
+  let children = (union.children ?? [])
+    .map((id) => graph[id])
+    .sort((person) => person.position.x);
+
+  // Get the start and end positions for each line
+  let p1 = parents[0]?.position;
+  let p2 = parents[parents.length - 1]?.position;
+  let c1 = children[0]?.position;
+  let c2 = children[children.length - 1]?.position;
+
+  // Draw
+  ctx.fillStyle = "black";
+  if (parents.length) {
+    ctx.moveTo(p1.x * PROFILE_WIDTH, p1.y * PROFILE_HEIGHT);
+    ctx.lineTo(p2.x * PROFILE_WIDTH, p2.y * PROFILE_HEIGHT);
+  }
+  if (parents.length && children.length) {
+    ctx.moveTo((p1.x + p2.x) / 2 * PROFILE_WIDTH, (p1.y + p2.y) / 2 * PROFILE_HEIGHT);
+    ctx.lineTo((c1.x + c2.x) / 2 * PROFILE_WIDTH, (c1.y + c2.y - 2) / 2 * PROFILE_HEIGHT);
+  }
+  if (children.length) {
+    ctx.moveTo(c1.x * PROFILE_WIDTH, (c1.y - 1) * PROFILE_HEIGHT);
+    ctx.lineTo(c2.x * PROFILE_WIDTH, (c2.y - 1) * PROFILE_HEIGHT);
+    for (let child of children) {
+      ctx.moveTo(child.position.x * PROFILE_WIDTH, (child.position.y - 1) * PROFILE_HEIGHT);
+      ctx.lineTo(child.position.x * PROFILE_WIDTH, child.position.y * PROFILE_HEIGHT);
+    }
+  }
+}
+
+/**
+ * Draw a single person.
  * @param {Identity} identity - Data about the person.
  * @param {Coordinates} position - Unscaled position for the profile.
  */
