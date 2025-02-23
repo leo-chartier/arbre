@@ -1,9 +1,9 @@
 /** The aspect ratio of a profile's picture. */
 const PFP_ASPECT_RATIO = 2/3;
 /** The width of a profile. */
-const PROFILE_WIDTH = 500;
+const PROFILE_WIDTH = 200;
 /** The height of a profile. */
-const PROFILE_HEIGHT = 150;
+const PROFILE_HEIGHT = 60;
 /** The formatter to display dates */
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR");
 /**
