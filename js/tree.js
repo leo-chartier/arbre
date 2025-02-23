@@ -56,12 +56,15 @@ function place(id, graph, relatives) {
     let predX = x;
 
     while (predX >= 0) {
-      let predecessor = Object.values(graph).find(entry => entry.place?.x == predX && entry.place?.y == predY)?.id;
+      let predecessor = Object.values(graph).find((entry) => entry.place?.x == predX && entry.place?.y == predY)?.id;
       if (!predecessor) continue;
-      
-      let group = [...relatives[predecessor][relation], ...relatives[predecessor][relation].flatMap(id => relatives[id].spouses)];
-      let xs = group.map(id => graph[id]?.place?.x).filter(x => x !== undefined);
-      
+
+      let group = [
+        ...relatives[predecessor][relation],
+        ...relatives[predecessor][relation].flatMap((id) => relatives[id].spouses),
+      ];
+      let xs = group.map((id) => graph[id]?.place?.x).filter((x) => x !== undefined);
+
       if (xs.length) return Math.max(...xs) + 1;
       predX--;
     }
@@ -87,11 +90,79 @@ function place(id, graph, relatives) {
 
   // Shift other profiles
   Object.values(graph)
-    .filter(p => p.place && p.place.y === y && p.place.x >= x)
-    .forEach(p => p.place.x++);
+    .filter((p) => p.place && p.place.y === y && p.place.x >= x)
+    .forEach((p) => p.place.x++);
 
   // Assign placement
   person.place = { x, y };
+}
+
+/**
+ * Calculate the position of each profile.
+ * @param {string} root - The ID of the person at the root.
+ * @param {Graph} graph - The graph and its data.
+ * @param {Union[]} unions - List of all couples and their children.
+ * @param {Object<string, Relatives>} relatives - The person's relatives.
+ */
+function positions(root, graph, unions, relatives) {
+  // Default positions
+  Object.values(graph).forEach(
+    (person) =>
+      (person.position = {
+        x: person.place.x * (1 + PROFILE_HORIZONTAL_SPACING),
+        y: person.place.y * (1 + PROFILE_VERTICAL_SPACING),
+      })
+  );
+
+  function getCenter(group) {
+    if (!group.length) return null;
+    let xs = group.map((id) => graph[id].position.x);
+    return (Math.min(...xs) + Math.max(...xs)) / 2;
+  }
+
+  function overlaps(person1, person2) {
+    return Math.abs(person1.position.x - person2.position.x) < 1 + PROFILE_HORIZONTAL_SPACING && 
+      Math.abs(person1.position.y - person2.position.y) < 1 + PROFILE_VERTICAL_SPACING;
+  }
+
+  // Ensure alignment
+  let modified = [root];
+  while (modified.length) {
+    let id = modified.shift();
+
+    let union = unions.find((union) => (union.children ?? []).includes(id));
+    if (!union) continue;
+    let parents = [union.parent1, union.parent2].filter((id) => id != null);
+    if (parents.length == 0 || union.children.length == 0) continue;
+    let parentsCenter = getCenter(parents);
+    let childrenCenter = getCenter(union.children);
+    let offset = parentsCenter - childrenCenter;
+    if (offset == 0) continue;
+
+    // TODO: If predecessor is parent, apply to children instead
+    // Apply the offset
+    let row = Object.values(graph).filter((person) => person.place.y == graph[parents[0]].place.y);
+    let affected = parents;
+    while (affected.length) {
+      let id = affected.shift();
+      graph[id].position.x -= offset;
+      modified.push(id);
+
+      // Propagate the push if overlaps
+      for (let person of row) {
+        if (person.id != id && overlaps(person, graph[id]) && !affected.includes(person.id)) {
+          affected.push(person.id);
+        }
+      }
+    }
+  }
+
+  // Shift the origin
+  let { x, y } = graph[root].position;
+  for (let person of Object.values(graph)) {
+    person.position.x -= x;
+    person.position.y -= y;
+  }
 }
 
 /**
@@ -140,11 +211,7 @@ function generate(root, unions) {
     }
   }
 
-  // TODO: Correct positions
-  // TEMP
-  for (let person of Object.values(graph)) {
-    person.position = person.place;
-  }
+  positions(root, graph, unions, relatives);
 
   return graph;
 }
