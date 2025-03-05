@@ -98,6 +98,63 @@ function place(id, graph, relatives) {
 }
 
 /**
+ * Calculate the center of mass of multiple person.
+ * @param {string[]} group - The ID of the people.
+ * @param {Graph} graph - The graph and its data.
+ * @returns {number} - The X value of their center.
+ */
+function getCenter(group, graph) {
+  if (!group.length) return null;
+  let xs = group.map((id) => graph[id].position.x);
+  return (Math.min(...xs) + Math.max(...xs)) / 2;
+}
+
+/**
+ * Check if two profiles overlap.
+ * @param {GraphEntry} person1 - The first profile.
+ * @param {GraphEntry} person2 - The second profile.
+ * @returns {boolean} - Whether there is an overlap.
+ */
+function overlaps(person1, person2) {
+  return Math.abs(person1.position.x - person2.position.x) < 1 + PROFILE_HORIZONTAL_SPACING && 
+    Math.abs(person1.position.y - person2.position.y) < 1 + PROFILE_VERTICAL_SPACING;
+}
+
+/**
+ * Calculate the position of each parent.
+ * @param {string} id - The ID of the person that triggered the positioning.
+ * @param {Graph} graph - The graph and its data.
+ * @param {Union[]} unions - List of all couples and their children.
+ * @param {string[]} modified - List of people that have been repositioned.
+ */
+function positionsParents(id, graph, unions, modified) {
+  let union = unions.find((union) => (union.children ?? []).includes(id));
+  if (!union) return;
+  let parents = [union.parent1, union.parent2].filter((id) => id != null);
+  if (parents.length == 0 || union.children.length == 0) return;
+  let parentsCenter = getCenter(parents, graph);
+  let childrenCenter = getCenter(union.children, graph);
+  let offset = parentsCenter - childrenCenter;
+  if (offset == 0) return;
+
+  // Apply the offset
+  let row = Object.values(graph).filter((person) => person.place.y == graph[parents[0]].place.y);
+  let affected = parents;
+  while (affected.length) {
+    let id = affected.shift();
+    graph[id].position.x -= offset;
+    modified.push(id);
+
+    // Propagate the push if overlaps
+    for (let person of row) {
+      if (person.id != id && overlaps(person, graph[id]) && !affected.includes(person.id)) {
+        affected.push(person.id);
+      }
+    }
+  }
+}
+
+/**
  * Calculate the position of each profile.
  * @param {string} root - The ID of the person at the root.
  * @param {Graph} graph - The graph and its data.
@@ -114,47 +171,13 @@ function positions(root, graph, unions, relatives) {
       })
   );
 
-  function getCenter(group) {
-    if (!group.length) return null;
-    let xs = group.map((id) => graph[id].position.x);
-    return (Math.min(...xs) + Math.max(...xs)) / 2;
-  }
-
-  function overlaps(person1, person2) {
-    return Math.abs(person1.position.x - person2.position.x) < 1 + PROFILE_HORIZONTAL_SPACING && 
-      Math.abs(person1.position.y - person2.position.y) < 1 + PROFILE_VERTICAL_SPACING;
-  }
-
   // Ensure alignment
   let modified = [root];
   while (modified.length) {
     let id = modified.shift();
 
-    let union = unions.find((union) => (union.children ?? []).includes(id));
-    if (!union) continue;
-    let parents = [union.parent1, union.parent2].filter((id) => id != null);
-    if (parents.length == 0 || union.children.length == 0) continue;
-    let parentsCenter = getCenter(parents);
-    let childrenCenter = getCenter(union.children);
-    let offset = parentsCenter - childrenCenter;
-    if (offset == 0) continue;
-
-    // TODO: If predecessor is parent, apply to children instead
-    // Apply the offset
-    let row = Object.values(graph).filter((person) => person.place.y == graph[parents[0]].place.y);
-    let affected = parents;
-    while (affected.length) {
-      let id = affected.shift();
-      graph[id].position.x -= offset;
-      modified.push(id);
-
-      // Propagate the push if overlaps
-      for (let person of row) {
-        if (person.id != id && overlaps(person, graph[id]) && !affected.includes(person.id)) {
-          affected.push(person.id);
-        }
-      }
-    }
+    positionsParents(id, graph, unions, modified);
+    // TODO: Position children & spouses
   }
 
   // Shift the origin
