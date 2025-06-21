@@ -55,17 +55,18 @@ const Relation = {
 
 /**
  * A relationship model with coordinates.
- * @typedef {Object} GraphEntry
+ * @typedef {Object} Node
  * @property {string} id - Their unique identifier.
- * @property {string} predecessor - The ID of the person one step closer to the root.
+ * @property {Node} predecessor - The node of the person one step closer to the root.
  * @property {Relation} relation - Who this person is to their predecessor.
  * @property {number} depth - The minimal number of steps to reach the root.
- * @property {?Coordinates} place - The place of their profile, if all profiles were stored in a jaggered array.
+ * @property {?Node} left - The next profile to the left on the graph.
+ * @property {?Node} right - The next profile to the right on the graph.
  * @property {?Coordinates} position - The position of their profile, in relative units (not pixels).
  */
 
 /**
- * @typedef {Object<string, GraphEntry>} Graph
+ * @typedef {Object<string, Node>} Graph
  */
 
 /**

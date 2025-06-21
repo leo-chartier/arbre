@@ -38,63 +38,79 @@ function getRelatives(unions) {
   return relatives;
 }
 
+function linkNodes(left, middle, right) {
+  if (left != null)
+    left.right = middle;
+  if (middle != null) {
+    middle.left = left;
+    middle.right = right;
+  }
+  if (right != null)
+    right.left = middle;
+}
+
 /**
- * Calculate the placement of a profile. Move the others if necessary.
- * @param {string} id - The ID of the person to add.
- * @param {Graph} graph - The graph and its data.
- * @param {Object<string, Relatives>} relatives - The person's relatives.
+ * Create a node in the graph for a new person.
+ * @param {string} id - The ID of the person for the new node.
+ * @param {Node} predecessorNode - The node of the person's .
+ * @param {Relation} relation - How is this person for their predecessor.
+ * @param {Relatives} predecessorRelatives - The relatives of the predecessor.
+ * @param {Node[]} lastNodes - An array containing the first node of each degree.
+ * @returns 
  */
-function place(id, graph, relatives) {
-  if (!graph[id]) {
-    throw Error(`Trying to place ID ${id} but its data isn't initialized.`);
-  }
-  let person = graph[id];
-  let { x, y } = graph[person.predecessor].place;
+function createNode(id, predecessorNode, relation, predecessorRelatives, lastNodes) {
+  const node = {
+    id: id,
+    predecessor: predecessorNode.id,
+    relation: relation,
+    left: null,
+    right: null,
+    depth: predecessorNode.depth + 1,
+    position: null,
+  };
 
-  function nextPlace(relation) {
-    let predY = graph[person.predecessor].place.y;
-    let predX = x;
+  let lastNode = predecessorNode;
+  while (lastNode.right != null)
+    lastNode = lastNode.right;
+  let degree = lastNodes.indexOf(lastNode);
+  if (degree == -1)
+    throw new Error(`Node with id ${lastNode.id} has no right element but is not in list of last nodes. (ID: ${id})`);
 
-    while (predX >= 0) {
-      let predecessor = Object.values(graph).find((entry) => entry.place?.x == predX && entry.place?.y == predY)?.id;
-      if (!predecessor) continue;
-
-      let group = [
-        ...relatives[predecessor][relation],
-        ...relatives[predecessor][relation].flatMap((id) => relatives[id].spouses),
-      ];
-      let xs = group.map((id) => graph[id]?.place?.x).filter((x) => x !== undefined);
-
-      if (xs.length) return Math.max(...xs) + 1;
-      predX--;
-    }
-    return 0;
-  }
-
-  // Determine correct place
-  switch (person.relation) {
+  switch (relation) {
     case Relation.ROOT:
-      return; // Do not modify the root
+      return predecessorNode; // Do not modify the root
     case Relation.PARENT:
-      y--;
-      x = nextPlace("parents");
+      if (degree == 0) {
+        // Create a new row
+        lastNodes.unshift(node);
+      } else {
+        // There is already a row above, try to find an existing parent there
+        lastNode = lastNodes[--degree];
+        let existingParent = lastNode;
+        while (existingParent != null && !predecessorRelatives.parents.includes(existingParent.id))
+          existingParent = existingParent.left;
+        if (existingParent != null) {
+          linkNodes(existingParent, node, existingParent.right);
+        } else {
+          // There is no existing parent
+          // TODO
+        }
+      }
       break;
     case Relation.SPOUSE:
-      x++;
+      linkNodes(predecessorNode, node, predecessorNode.right);
       break;
     case Relation.CHILD:
-      y++;
-      x = nextPlace("children");
+      // TODO: Copy & adapt from parents
       break;
   }
 
-  // Shift other profiles
-  Object.values(graph)
-    .filter((p) => p.place && p.place.y === y && p.place.x >= x)
-    .forEach((p) => p.place.x++);
+  if (node.right == null) {
+    // The node is at the end of its row
+    lastNodes[degree] = node;
+  }
 
-  // Assign placement
-  person.place = { x, y };
+  return node;
 }
 
 /**
@@ -111,8 +127,8 @@ function getCenter(group, graph) {
 
 /**
  * Check if two profiles overlap.
- * @param {GraphEntry} person1 - The first profile.
- * @param {GraphEntry} person2 - The second profile.
+ * @param {Node} person1 - The first profile.
+ * @param {Node} person2 - The second profile.
  * @returns {boolean} - Whether there is an overlap.
  */
 function overlaps(person1, person2) {
@@ -121,72 +137,9 @@ function overlaps(person1, person2) {
 }
 
 /**
- * Calculate the position of each parent.
- * @param {string} id - The ID of the person that triggered the positioning.
- * @param {Graph} graph - The graph and its data.
- * @param {Union[]} unions - List of all couples and their children.
- * @param {string[]} modified - List of people that have been repositioned.
+ * Mapping of relation attribute to its corresponding enum value.
  */
-function positionsParents(id, graph, unions, modified) {
-  let union = unions.find((union) => (union.children ?? []).includes(id));
-  if (!union) return;
-  let parents = [union.parent1, union.parent2].filter((id) => id != null);
-  if (parents.length == 0 || union.children.length == 0) return;
-  let parentsCenter = getCenter(parents, graph);
-  let childrenCenter = getCenter(union.children, graph);
-  let offset = parentsCenter - childrenCenter;
-  if (offset == 0) return;
-
-  // Apply the offset
-  let row = Object.values(graph).filter((person) => person.place.y == graph[parents[0]].place.y);
-  let affected = parents;
-  while (affected.length) {
-    let id = affected.shift();
-    graph[id].position.x -= offset;
-    modified.push(id);
-
-    // Propagate the push if overlaps
-    for (let person of row) {
-      if (person.id != id && overlaps(person, graph[id]) && !affected.includes(person.id)) {
-        affected.push(person.id);
-      }
-    }
-  }
-}
-
-/**
- * Calculate the position of each profile.
- * @param {string} root - The ID of the person at the root.
- * @param {Graph} graph - The graph and its data.
- * @param {Union[]} unions - List of all couples and their children.
- * @param {Object<string, Relatives>} relatives - The person's relatives.
- */
-function positions(root, graph, unions, relatives) {
-  // Default positions
-  Object.values(graph).forEach(
-    (person) =>
-      (person.position = {
-        x: person.place.x * (1 + PROFILE_HORIZONTAL_SPACING),
-        y: person.place.y * (1 + PROFILE_VERTICAL_SPACING),
-      })
-  );
-
-  // Ensure alignment
-  let modified = [root];
-  while (modified.length) {
-    let id = modified.shift();
-
-    positionsParents(id, graph, unions, modified);
-    // TODO: Position children & spouses
-  }
-
-  // Shift the origin
-  let { x, y } = graph[root].position;
-  for (let person of Object.values(graph)) {
-    person.position.x -= x;
-    person.position.y -= y;
-  }
-}
+const relationMap = { parents: Relation.PARENT, spouses: Relation.SPOUSE, children: Relation.CHILD };
 
 /**
  * Get the positions of everyone.
@@ -195,46 +148,35 @@ function positions(root, graph, unions, relatives) {
  * @returns {Graph} - Everyone's position and their predecessors.
  */
 function generate(root, unions) {
-  let graph = {
-    [root]: {
-      id: root,
-      predecessor: root,
-      relation: Relation.ROOT,
-      depth: 0,
-      place: { x: 0, y: 0 },
-      position: { x: 0, y: 0 },
-    },
+  const rootNode = {
+    id: root,
+    relation: Relation.ROOT,
+    depth: 0,
+    left: null,
+    right: null,
+    position: { x: 0, y: 0 },
   };
+  rootNode.predecessor = rootNode;
+  let graph = {[root]: rootNode};
 
   let relatives = getRelatives(unions);
   let todo = [root];
-
-  const relationMap = { parents: Relation.PARENT, spouses: Relation.SPOUSE, children: Relation.CHILD };
+  let lastNodes = [rootNode];
 
   while (todo.length) {
-    let id = todo.shift();
-    if (!relatives[id]) continue;
+    const predecessorId = todo.shift();
+    if (!predecessorId || !graph[predecessorId] || !relatives[predecessorId]) continue;
+    const predecessorNode = graph[predecessorId];
 
     for (const type in relationMap) {
-      for (const person of relatives[id][type]) {
-        if (!graph[person]) {
-          graph[person] = {
-            id: person,
-            predecessor: id,
-            relation: relationMap[type],
-            depth: graph[id].depth + 1,
-          };
-          todo.push(person);
-        }
+      for (const id of relatives[predecessorId][type]) {
+          if (graph[id]) continue;
+
+        graph[id] = createNode(id, predecessorNode, relationMap[type], relatives[predecessorId], lastNodes);
+        todo.push(id);
       }
     }
-
-    if (!graph[id].place) {
-      place(id, graph, relatives);
-    }
   }
-
-  positions(root, graph, unions, relatives);
 
   return graph;
 }
