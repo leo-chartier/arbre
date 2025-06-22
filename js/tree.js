@@ -38,15 +38,45 @@ function getRelatives(unions) {
   return relatives;
 }
 
-function linkNodes(left, middle, right) {
+function linkNodes(left, right) {
   if (left != null)
-    left.right = middle;
-  if (middle != null) {
-    middle.left = left;
-    middle.right = right;
-  }
+    left.right = right;
   if (right != null)
-    right.left = middle;
+    right.left = left;
+}
+
+/**
+ * 
+ * @param {Node} node - The node to insert.
+ * @param {Node} predecessorNode - The predecessor of the node to insert.
+ * @param {Node} lastNode - Last node on the row of the predecessor.
+ * @param {Object<string, Relatives>} relatives - A mapping of the relatives.
+ * @param {number} offset - The degree offset (vertical).
+ * @param {string} relation - What the node is to its predecessor.
+ */
+function insertNode(node, predecessorNode, lastNode, relatives, relation) {
+  // There is already a row above, try to find an existing parent there
+  let child = predecessorNode;
+  let existingParent = null;
+  while (child != null) {
+    existingParent = lastNode;
+    while (existingParent != null && !relatives[child.id][relation].includes(existingParent.id))
+      existingParent = existingParent.left;
+    if (existingParent != null)
+      break;
+    child = child.left;
+  }
+
+  if (existingParent != null) {
+    // There are other nodes to the left
+    linkNodes(node, existingParent.right);
+    linkNodes(existingParent, node);
+  } else {
+    // Default to the start of the row
+    while (lastNode.left != null)
+      lastNode = lastNode.left;
+    linkNodes(node, lastNode);
+  }
 }
 
 /**
@@ -54,11 +84,14 @@ function linkNodes(left, middle, right) {
  * @param {string} id - The ID of the person for the new node.
  * @param {Node} predecessorNode - The node of the person's .
  * @param {Relation} relation - How is this person for their predecessor.
- * @param {Relatives} predecessorRelatives - The relatives of the predecessor.
+ * @param {Object<string, Relatives>} relatives - A mapping of the relatives.
  * @param {Node[]} lastNodes - An array containing the first node of each degree.
- * @returns 
+ * @returns {Node} The newly created node.
  */
-function createNode(id, predecessorNode, relation, predecessorRelatives, lastNodes) {
+function createNode(id, predecessorNode, relation, relatives, lastNodes) {
+  /**
+   * @type {Node}
+   */
   const node = {
     id: id,
     predecessor: predecessorNode.id,
@@ -82,31 +115,34 @@ function createNode(id, predecessorNode, relation, predecessorRelatives, lastNod
     case Relation.PARENT:
       if (degree == 0) {
         // Create a new row
-        lastNodes.unshift(node);
+        lastNodes.unshift(null);
       } else {
         // There is already a row above, try to find an existing parent there
         lastNode = lastNodes[--degree];
-        let existingParent = lastNode;
-        while (existingParent != null && !predecessorRelatives.parents.includes(existingParent.id))
-          existingParent = existingParent.left;
-        if (existingParent != null) {
-          linkNodes(existingParent, node, existingParent.right);
-        } else {
-          // There is no existing parent
-          // TODO
-        }
+        insertNode(node, predecessorNode, lastNode, relatives, "parents");
       }
       break;
     case Relation.SPOUSE:
-      linkNodes(predecessorNode, node, predecessorNode.right);
+      linkNodes(node, predecessorNode.right);
+      linkNodes(predecessorNode, node);
+      degree = lastNodes.indexOf(lastNode);
       break;
     case Relation.CHILD:
-      // TODO: Copy & adapt from parents
+      degree++;
+      if (degree == lastNodes.length) {
+        // Create a new row
+        lastNodes.push(null);
+      } else {
+        // There is already a row below, try to find an existing child there
+        lastNode = lastNodes[degree];
+        insertNode(node, predecessorNode, lastNode, relatives, "parents");
+      }
       break;
   }
 
-  if (node.right == null) {
+  if (node.left == lastNodes[degree]) {
     // The node is at the end of its row
+    linkNodes(lastNodes[degree], node);
     lastNodes[degree] = node;
   }
 
@@ -148,6 +184,9 @@ const relationMap = { parents: Relation.PARENT, spouses: Relation.SPOUSE, childr
  * @returns {Graph} - Everyone's position and their predecessors.
  */
 function generate(root, unions) {
+  /**
+   * @type {Node}
+   */
   const rootNode = {
     id: root,
     relation: Relation.ROOT,
@@ -170,9 +209,10 @@ function generate(root, unions) {
 
     for (const type in relationMap) {
       for (const id of relatives[predecessorId][type]) {
-          if (graph[id]) continue;
+        if (graph[id])
+          continue;
 
-        graph[id] = createNode(id, predecessorNode, relationMap[type], relatives[predecessorId], lastNodes);
+        graph[id] = createNode(id, predecessorNode, relationMap[type], relatives, lastNodes);
         todo.push(id);
       }
     }
@@ -183,17 +223,18 @@ function generate(root, unions) {
 
 /**
  * Get the places of each person into a jaggered array.
- * @param {Graph} graph
- * @returns {string[][]}
+ * @param {Node[]} lastNodes - The last node of each row.
+ * @returns {string[][]} A jaggered of ids.
  */
-function debugPlaces(graph) {
-  let minY = Math.min(...Object.values(graph).map((entry) => entry.place?.y));
-
+function debugPlaces(lastNodes) {
   let array = [];
-  for (let person of Object.values(graph)) {
-    if (!person.place) continue;
-    array[person.place.y - minY] ||= [];
-    array[person.place.y - minY][person.place.x] = person.id;
+
+  for (const lastNode of Object.values(lastNodes)) {
+    let row = [];
+    for (let node = lastNode; node != null; node = node.left) {
+      row.unshift(node.id);
+    }
+    array.push(row);
   }
 
   return array;
