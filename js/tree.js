@@ -50,17 +50,15 @@ function linkNodes(left, right) {
  * @param {Node} node - The node to insert.
  * @param {Node} predecessorNode - The predecessor of the node to insert.
  * @param {Node} lastNode - Last node on the row of the predecessor.
- * @param {Object<string, Relatives>} relatives - A mapping of the relatives.
- * @param {number} offset - The degree offset (vertical).
- * @param {string} relation - What the node is to its predecessor.
+ * @param {Node[]} relatives - A mapping of the relatives.
  */
-function insertNode(node, predecessorNode, lastNode, relatives, relation) {
+function insertNode(node, predecessorNode, lastNode, relatives) {
   // There is already a row above, try to find an existing parent there
   let child = predecessorNode;
   let existingParent = null;
   while (child != null) {
     existingParent = lastNode;
-    while (existingParent != null && !relatives[child.id][relation].includes(existingParent.id))
+    while (existingParent != null && !relatives.includes(existingParent.id))
       existingParent = existingParent.left;
     if (existingParent != null)
       break;
@@ -84,11 +82,10 @@ function insertNode(node, predecessorNode, lastNode, relatives, relation) {
  * @param {string} id - The ID of the person for the new node.
  * @param {Node} predecessorNode - The node of the person's .
  * @param {Relation} relation - How is this person for their predecessor.
- * @param {Object<string, Relatives>} relatives - A mapping of the relatives.
  * @param {Node[]} lastNodes - An array containing the first node of each degree.
  * @returns {Node} The newly created node.
  */
-function createNode(id, predecessorNode, relation, relatives, lastNodes) {
+function createNode(id, predecessorNode, relation, lastNodes) {
   /**
    * @type {Node}
    */
@@ -96,6 +93,9 @@ function createNode(id, predecessorNode, relation, relatives, lastNodes) {
     id: id,
     predecessor: predecessorNode.id,
     relation: relation,
+    parents: [],
+    spouses: [],
+    children: [],
     left: null,
     right: null,
     depth: predecessorNode.depth + 1,
@@ -119,7 +119,7 @@ function createNode(id, predecessorNode, relation, relatives, lastNodes) {
       } else {
         // There is already a row above, try to find an existing parent there
         lastNode = lastNodes[--degree];
-        insertNode(node, predecessorNode, lastNode, relatives, "parents");
+        insertNode(node, predecessorNode, lastNode, predecessorNode.parents);
       }
       break;
     case Relation.SPOUSE:
@@ -135,7 +135,7 @@ function createNode(id, predecessorNode, relation, relatives, lastNodes) {
       } else {
         // There is already a row below, try to find an existing child there
         lastNode = lastNodes[degree];
-        insertNode(node, predecessorNode, lastNode, relatives, "parents");
+        insertNode(node, predecessorNode, lastNode, predecessorNode.children);
       }
       break;
   }
@@ -191,6 +191,9 @@ function generate(root, unions) {
     id: root,
     relation: Relation.ROOT,
     depth: 0,
+    parents: [],
+    spouses: [],
+    children: [],
     left: null,
     right: null,
     position: { x: 0, y: 0 },
@@ -212,7 +215,9 @@ function generate(root, unions) {
         if (graph[id])
           continue;
 
-        graph[id] = createNode(id, predecessorNode, relationMap[type], relatives, lastNodes);
+        const node = createNode(id, predecessorNode, relationMap[type], lastNodes);
+        predecessorNode[type].push(node);
+        graph[id] = node;
         todo.push(id);
       }
     }
