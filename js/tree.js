@@ -47,10 +47,10 @@ function linkNodes(left, right) {
 
 /**
  * 
- * @param {Node} node - The node to insert.
- * @param {Node} predecessorNode - The predecessor of the node to insert.
- * @param {Node} lastNode - Last node on the row of the predecessor.
- * @param {Node[]} relatives - A mapping of the relatives.
+ * @param {GraphNode} node - The node to insert.
+ * @param {GaphNode} predecessorNode - The predecessor of the node to insert.
+ * @param {GraphNode} lastNode - Last node on the row of the predecessor.
+ * @param {GraphNode[]} relatives - A mapping of the relatives.
  */
 function insertNode(node, predecessorNode, lastNode, relatives) {
   // There is already a row above, try to find an existing parent there
@@ -80,14 +80,14 @@ function insertNode(node, predecessorNode, lastNode, relatives) {
 /**
  * Create a node in the graph for a new person.
  * @param {string} id - The ID of the person for the new node.
- * @param {Node} predecessorNode - The node of the person's .
- * @param {Relation} relation - How is this person for their predecessor.
- * @param {Node[]} lastNodes - An array containing the first node of each degree.
- * @returns {Node} The newly created node.
+ * @param {GraphNode} predecessorNode - The node of the person's .
+ * @param {Relation} relation - Who is this person for their predecessor.
+ * @param {GraphNode[]} lastNodes - An array containing the first node of each degree.
+ * @returns {GraphNode} The newly created node.
  */
 function createNode(id, predecessorNode, relation, lastNodes) {
   /**
-   * @type {Node}
+   * @type {GraphNode}
    */
   const node = {
     id: id,
@@ -163,8 +163,8 @@ function getCenter(group, graph) {
 
 /**
  * Check if two profiles overlap.
- * @param {Node} person1 - The first profile.
- * @param {Node} person2 - The second profile.
+ * @param {GraphNode} person1 - The first profile.
+ * @param {GraphNode} person2 - The second profile.
  * @returns {boolean} - Whether there is an overlap.
  */
 function overlaps(person1, person2) {
@@ -178,6 +178,11 @@ function overlaps(person1, person2) {
 const relationMap = { parents: Relation.PARENT, spouses: Relation.SPOUSE, children: Relation.CHILD };
 
 /**
+ * Mapping of relation attribute to the corresponding opposite attribute.
+ */
+const relationOpposites = { parents: "children", spouses: "spouses", children: "parents" };
+
+/**
  * Get the positions of everyone.
  * @param {string} root - The ID to place first.
  * @param {Union[]} unions - List of all couples and their children.
@@ -185,7 +190,7 @@ const relationMap = { parents: Relation.PARENT, spouses: Relation.SPOUSE, childr
  */
 function generate(root, unions) {
   /**
-   * @type {Node}
+   * @type {GraphNode}
    */
   const rootNode = {
     id: root,
@@ -221,6 +226,12 @@ function generate(root, unions) {
         todo.push(id);
       }
     }
+
+    for (const type in relationMap) {
+      for (const id of relatives[predecessorId][type]) {
+        graph[id][relationOpposites[type]].push(predecessorNode);
+      }
+    }
   }
 
   return graph;
@@ -228,7 +239,7 @@ function generate(root, unions) {
 
 /**
  * Get the places of each person into a jaggered array.
- * @param {Node[]} lastNodes - The last node of each row.
+ * @param {GraphNode[]} lastNodes - The last node of each row.
  * @returns {string[][]} A jaggered of ids.
  */
 function debugPlaces(lastNodes) {
