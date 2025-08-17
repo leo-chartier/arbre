@@ -25,7 +25,7 @@ const GENDER_COLORS = {
 
 // TODO: Dynamically get each pfp
 let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
-pfp.onload = () => requestAnimationFrame(draw);
+// pfp.onload = () => requestAnimationFrame(draw);
 pfp.src = `https://gravatar.com/avatar/000000000000000000000000000000000000000000000000000000?d=mp&s=${PROFILE_HEIGHT}`;
 
 let graph = generate("0", UNIONS); // TEMP
@@ -150,4 +150,4 @@ function drawPerson(identity, position) {
   }
 }
 
-window.addEventListener("load", draw);
+// window.addEventListener("load", draw);
