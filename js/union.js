@@ -1,3 +1,5 @@
+import { Person } from "./person.js";
+
 export class Union {
   /**
    * A couple and their children
@@ -36,5 +38,21 @@ export class Union {
       data.pom,
       data.dod ? new Date(data.dod.replace("/", "-")) : undefined,
     );
+  }
+
+  /**
+   * Creates the links between all people
+   * @param {Map<string, Person>} people A mapping of IDs to person
+   */
+  link(people) {
+    for (const parentId of this.parents) {
+      const parent = people[parentId];
+      for (const childId of this.children) {
+        const child = people[childId];
+
+        child.addParent(parent)
+        parent.addChild(child);
+      }
+    }
   }
 }
