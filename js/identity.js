@@ -1,4 +1,6 @@
-class Identity {
+import { Gender, isNonEmptyString } from "./types.js";
+
+export class Identity {
   /**
    * Information about a person
    * @param {string} id Unique identifier of this person
@@ -26,16 +28,13 @@ class Identity {
   }
 
   /**
-   * Extract an identity from the main file.
-   * @param {string} id Unique identifier of this person
+   * Extract an identity from its JSON format
+   * @param {Object} data Raw JSON data for this identity
    * @returns {Identity}
    */
-  static fromId(id) {
-    const data = IDENTITIES[id];
-    if (!data) throw new Error(`Identity not found with id "${id}"`);
-
+  static fromJSON(data) {
     return new Identity(
-      id,
+      data.id,
       Object.values(Gender).find(g => g === data.gender) ?? Gender.UNKNOWN,
       data.lastname,
       data.firstnames,
