@@ -72,5 +72,3 @@ export class Person {
     return people[rootId];
   }
 }
-
-console.log(Person.extractPeople(IDENTITIES, UNIONS, "0"))
