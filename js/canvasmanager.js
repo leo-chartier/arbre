@@ -14,22 +14,23 @@ export class CanvasManager {
     this.ctx = canvas.getContext("2d");
     this.draw = draw;
 
-    this.cameraOffset = { x: document.body.clientWidth / 2, y: document.body.clientHeight / 2 };
+    this.cameraOffset = { x: 0, y: 0 }; // Automatically set to half the window (center) when first resized
     this.isDragging = false;
     this.dragStart = { x: 0, y: 0 };
     
-    this.cameraZoom = 1;
     this.initialPinchDistance = null;
     this.lastZoom = this.cameraZoom;
 
     // Rebinds "this" keyword for the handlers
     this.redraw = this.redraw.bind(this);
+    this.onResize = this.onResize.bind(this);
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
     this.adjustZoom = this.adjustZoom.bind(this);
 
     // Registers the events
+    window.addEventListener("resize", this.onResize);
     canvas.addEventListener("mousedown", this.onPointerDown);
     canvas.addEventListener("mousemove", this.onPointerMove);
     canvas.addEventListener("mouseup", this.onPointerUp);
@@ -37,7 +38,9 @@ export class CanvasManager {
     canvas.addEventListener("touchmove", (event) => this.handleTouch(event, this.onPointerMove));
     canvas.addEventListener("touchend", (event) => this.handleTouch(event, this.onPointerUp));
     canvas.addEventListener("wheel", this.adjustZoom);
+
     console.log("Canvas events registered");
+    this.reset();
   }
 
   redraw() {
@@ -55,6 +58,15 @@ export class CanvasManager {
     this.draw(this.ctx);
   }
 
+  reset() {
+    this.canvas.width = document.body.clientWidth;
+    this.canvas.height = document.body.clientHeight;
+    this.cameraOffset = { x: document.body.clientWidth / 2, y: document.body.clientHeight / 2 };
+    this.cameraZoom = 1;
+    
+    this.redraw();
+  }
+
   /**
    * Get the location of an event.
    * @param {TouchEvent} event - The triggering event.
@@ -68,6 +80,24 @@ export class CanvasManager {
       // Mouse
       return { x: event.clientX, y: event.clientY };
     }
+  }
+
+  /**
+   * Set the new size for the canvas.
+   * @param {Event} event - The triggering event.
+   */
+  onResize(event) {
+    const old_width = this.canvas.width;
+    const old_height = this.canvas.height;
+    const new_width = document.body.clientWidth;
+    const new_height = document.body.clientHeight;
+    this.canvas.width = new_width;
+    this.canvas.height = new_height;
+
+    this.cameraOffset.x -= (old_width - new_width) / 2;
+    this.cameraOffset.y -= (old_height - new_height) / 2;
+
+    this.redraw();
   }
 
   /**

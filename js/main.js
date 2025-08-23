@@ -1,5 +1,5 @@
 import { CanvasManager } from "./canvasmanager.js";
-import { draw, setupCanvas } from "./draw.js";
+import { draw } from "./draw.js";
 import { Person } from "./person.js";
 import { generate } from "./graph.js";
 
@@ -16,6 +16,7 @@ let root = Person.extractPeople(identities, unions, rootId);
 
 // Draw the tree
 const canvas = document.getElementById("treeCanvas");
-setupCanvas(canvas);
 const manager = new CanvasManager(canvas, (ctx) => draw(ctx, generate(root)));
-manager.redraw();
+
+// Link the elements
+document.getElementById("reset").onclick = manager.reset.bind(manager);

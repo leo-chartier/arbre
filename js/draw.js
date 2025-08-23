@@ -27,17 +27,6 @@ let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
 pfp.src = `https://gravatar.com/avatar/000000000000000000000000000000000000000000000000000000?d=mp&s=${PROFILE_HEIGHT}`;
 
 /**
- * Sets the canvas to the correct size
- * @param {HTMLCanvasElement} canvas 
- */
-export function setupCanvas(canvas) {
-  let CANVAS_WIDTH = document.body.clientWidth;
-  let CANVAS_HEIGHT = document.body.clientHeight;
-  canvas.width = CANVAS_WIDTH;
-  canvas.height = CANVAS_HEIGHT;
-}
-
-/**
  * Draws the tree on the canvas.
  * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
  * @param {Graph} graph - The graph to draw
