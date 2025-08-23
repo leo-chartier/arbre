@@ -1,3 +1,6 @@
+import { Identity } from "./identity.js";
+import { Gender } from "./types.js";
+
 /** The aspect ratio of a profile's picture. */
 const PFP_ASPECT_RATIO = 2/3;
 /** The width of a profile. */
@@ -6,11 +9,6 @@ const PROFILE_WIDTH = 200;
 const PROFILE_HEIGHT = 60;
 /** The formatter to display dates */
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR");
-/**
- * The rendering context.
- * @type {CanvasRenderingContext2D}
- */
-let ctx = canvas.getContext("2d");
 
 /**
  * The colors associated with each gender.
@@ -28,80 +26,61 @@ let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
 // pfp.onload = () => requestAnimationFrame(draw);
 pfp.src = `https://gravatar.com/avatar/000000000000000000000000000000000000000000000000000000?d=mp&s=${PROFILE_HEIGHT}`;
 
-let graph = generate("0", UNIONS); // TEMP
-
 /**
- * Draws the tree on the canvas.
+ * Sets the canvas to the correct size
+ * @param {HTMLCanvasElement} canvas 
  */
-function draw() {
+export function setupCanvas(canvas) {
   let CANVAS_WIDTH = document.body.clientWidth;
   let CANVAS_HEIGHT = document.body.clientHeight;
   canvas.width = CANVAS_WIDTH;
   canvas.height = CANVAS_HEIGHT;
-
-  // Translate to the canvas centre before zooming - so you'll always zoom on what you're looking directly at
-  ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-  ctx.scale(cameraZoom, cameraZoom);
-  ctx.translate(
-    -CANVAS_WIDTH / 2 + cameraOffset.x,
-    -CANVAS_HEIGHT / 2 + cameraOffset.y
-  );
-  ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-  // TODO: Don't draw if outside of screen
-  ctx.beginPath();
-  UNIONS.forEach((union) => drawLines(union, graph));
-  ctx.stroke();
-  Object.values(graph).forEach((entry) => drawPerson(IDENTITIES.find(person => person.id == entry.id), entry.position));
 }
 
 /**
- * Draw the connections for a union.
- * @param {Union} union - The union for which the lines should be drawn.
- * @param {Graph} graph - The graph containing the position of each profile.
+ * Draws the tree on the canvas.
+ * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
+ * @param {Graph} graph - The graph to draw
  */
-function drawLines(union, graph) {
-  // Prepare values
-  let parents = [union.parent1, union.parent2]
-    .filter((id) => id != null)
-    .map((id) => graph[id])
-    .sort((person) => person.position.x);
-  let children = (union.children ?? [])
-    .map((id) => graph[id])
-    .sort((person) => person.position.x);
+export function draw(ctx, graph) {
+  ctx.beginPath();
+  for (const edge of graph.edges) {
+    const coord1 = graph.nodes.find((n) => n.person.identity.id == edge.a)?.coords;
+    const coord2 = graph.nodes.find((n) => n.person.identity.id == edge.b)?.coords;
+    if (coord1 && coord2)
+      drawLines(ctx, coord1.x, coord1.y, coord2.x, coord2.y);
+  }
+  ctx.stroke();
 
-  // Get the start and end positions for each line
-  let p1 = parents[0]?.position;
-  let p2 = parents[parents.length - 1]?.position;
-  let c1 = children[0]?.position;
-  let c2 = children[children.length - 1]?.position;
+  for (const node of graph.nodes) {
+    drawPerson(ctx, node.person.identity, node.coords);
+  }
+}
 
-  // Draw
+/**
+ * Draws a broken line between two points
+ * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
+ * @param {*} x1 - The x coordinate of the first point
+ * @param {*} y1 - The y coordinate of the first point
+ * @param {*} x2 - The x coordinate of the second point
+ * @param {*} y2 - The y coordinate of the second point
+ */
+function drawLines(ctx, x1, y1, x2, y2) {
+  const middle = (y1 + y2) / 2;
   ctx.fillStyle = "black";
-  if (parents.length) {
-    ctx.moveTo(p1.x * PROFILE_WIDTH, p1.y * PROFILE_HEIGHT);
-    ctx.lineTo(p2.x * PROFILE_WIDTH, p2.y * PROFILE_HEIGHT);
-  }
-  if (parents.length && children.length) {
-    ctx.moveTo((p1.x + p2.x) / 2 * PROFILE_WIDTH, (p1.y + p2.y) / 2 * PROFILE_HEIGHT);
-    ctx.lineTo((c1.x + c2.x) / 2 * PROFILE_WIDTH, (c1.y + c2.y - 2) / 2 * PROFILE_HEIGHT);
-  }
-  if (children.length) {
-    ctx.moveTo(c1.x * PROFILE_WIDTH, (c1.y - 1) * PROFILE_HEIGHT);
-    ctx.lineTo(c2.x * PROFILE_WIDTH, (c2.y - 1) * PROFILE_HEIGHT);
-    for (let child of children) {
-      ctx.moveTo(child.position.x * PROFILE_WIDTH, (child.position.y - 1) * PROFILE_HEIGHT);
-      ctx.lineTo(child.position.x * PROFILE_WIDTH, child.position.y * PROFILE_HEIGHT);
-    }
-  }
+  ctx.moveTo(x1 * PROFILE_WIDTH, y1 * PROFILE_HEIGHT);
+  ctx.lineTo(x1 * PROFILE_WIDTH, middle * PROFILE_HEIGHT);
+  ctx.lineTo(x2 * PROFILE_WIDTH, middle * PROFILE_HEIGHT);
+  ctx.lineTo(x2 * PROFILE_WIDTH, y2 * PROFILE_HEIGHT);
 }
 
 /**
  * Draw a single person.
+ * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
  * @param {Identity} identity - Data about the person.
  * @param {Coordinates} position - Unscaled position for the profile.
  */
-function drawPerson(identity, position) {
+function drawPerson(ctx, identity, position) {
   // TODO: Get proper pfp
   // let pfp;
 
@@ -149,5 +128,3 @@ function drawPerson(identity, position) {
     ctx.fillText(line, x1, y1 + i * lineHeight, maxWidth);
   }
 }
-
-// window.addEventListener("load", draw);

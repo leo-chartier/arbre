@@ -57,11 +57,15 @@ export class Person {
    * @param {Object[]} identities A list of JSON identities
    * @param {Object[]} unions A list of JSON relations
    * @param {string | null} rootId The ID of the root person
+   * @returns {Person} The root person
    */
   static extractPeople(identities, unions, rootId) {
     if (!rootId)
       rootId = identities[0].id;
+    if (!rootId)
+      throw new Error("Invalid root ID.");
 
+    /** @type {Map<string, Person>} */
     const people = Object.fromEntries(identities.map(
       data => [data.id, new Person(Identity.fromJSON(data))],
     ));
