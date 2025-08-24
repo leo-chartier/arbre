@@ -1,14 +1,6 @@
+import { DATE_FORMATTER, HORIZONTAL_SPACING, PFP_ASPECT_RATIO, PROFILE_HEIGHT, PROFILE_WIDTH, VERTICAL_SPACING } from "./constants.js";
 import { Identity } from "./identity.js";
 import { Gender } from "./types.js";
-
-/** The aspect ratio of a profile's picture. */
-const PFP_ASPECT_RATIO = 2/3;
-/** The width of a profile. */
-const PROFILE_WIDTH = 200;
-/** The height of a profile. */
-const PROFILE_HEIGHT = 60;
-/** The formatter to display dates */
-const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR");
 
 /**
  * The colors associated with each gender.
@@ -68,6 +60,7 @@ function drawPerson(ctx, identity, position) {
   let pfp;
   if (identity.picture) {
     pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
+    pfp.crossOrigin = "anonymous"; // Prevent CORS problem when downloading the canvas
     pfp.src = identity.picture;
   }
 
@@ -76,8 +69,8 @@ function drawPerson(ctx, identity, position) {
   let lines = [
     `${identity.firstnames || "?"} ${identity.lastname?.toUpperCase() || "?"}`,
     "",
-    identity.dob ? `* ${DATE_FORMATTER.format(Date.parse(identity.dob))}` : "",
-    identity.dod ? `\u2020 ${DATE_FORMATTER.format(Date.parse(identity.dod))}` : "",
+    identity.dob ? `* ${DATE_FORMATTER.format(identity.dob)}` : "",
+    identity.dod ? `\u2020 ${DATE_FORMATTER.format(identity.dod)}` : "",
   ];
   
   // Backgrounds
@@ -120,4 +113,15 @@ function drawPerson(ctx, identity, position) {
   for (let [i, line] of lines.entries()) {
     ctx.fillText(line, x2, y2 + i * lineHeight, maxWidth);
   }
+}
+
+export function getBoundingBoxes(graph) {
+  const xs = graph.nodes.map((node) => node.coords.x);
+  const ys = graph.nodes.map((node) => node.coords.y);
+  return [
+    (Math.min(...xs) - 0.5 - HORIZONTAL_SPACING) * PROFILE_WIDTH,
+    (Math.min(...ys) - 0.5 - VERTICAL_SPACING) * PROFILE_HEIGHT,
+    (Math.max(...xs) + 0.5 + HORIZONTAL_SPACING) * PROFILE_WIDTH,
+    (Math.max(...ys) + 0.5 + VERTICAL_SPACING) * PROFILE_HEIGHT,
+  ];
 }

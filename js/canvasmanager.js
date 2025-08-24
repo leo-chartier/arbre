@@ -1,5 +1,8 @@
 // Adapted from https://codepen.io/chengarda/pen/wRxoyB
 
+import { draw, getBoundingBoxes } from "./draw.js"
+import { generate } from "./graph.js"
+
 export class CanvasManager {
   MAX_ZOOM = 5;
   MIN_ZOOM = 0.2;
@@ -7,12 +10,13 @@ export class CanvasManager {
 
   /**
    * @param {HTMLCanvasElement} canvas The canvas to manage
-   * @param {*} draw The callback to redraw the elements on the canvas
+   * @param {Person} root The person at the root of the graph
    */
-  constructor(canvas, draw) {
+  constructor(canvas, root) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.draw = draw;
+    this.root = root;
+    this.graph = generate(root);
 
     this.cameraOffset = { x: 0, y: 0 }; // Automatically set to half the window (center) when first resized
     this.isDragging = false;
@@ -54,8 +58,7 @@ export class CanvasManager {
       -this.canvas.height / 2 + this.cameraOffset.y
     );
 
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.draw(this.ctx);
+    draw(this.ctx, this.graph);
   }
 
   reset() {
@@ -182,5 +185,32 @@ export class CanvasManager {
     this.cameraZoom = Math.max(this.cameraZoom, this.MIN_ZOOM);
 
     requestAnimationFrame(this.redraw);
+  }
+
+  downloadImage(filename = "arbre.png") {
+    // Backup the settings
+    const oldWidth = this.canvas.width;
+    const oldHeight = this.canvas.height;
+
+    // Reposition and generate the image
+    const [x0, y0, x1, y1] = getBoundingBoxes(this.graph);
+    this.canvas.width = x1 - x0;
+    this.canvas.height = y1 - y0;
+    this.ctx.translate(-x0, -y0);
+    draw(this.ctx, this.graph);
+    const image = this.canvas.toDataURL("image/png");
+
+    // Reset to previous settings
+    this.canvas.width = oldWidth;
+    this.canvas.height = oldHeight;
+
+    // Download
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = filename;
+    link.click();
+
+    // Redraw
+    this.redraw();
   }
 }

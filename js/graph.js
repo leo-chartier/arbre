@@ -1,9 +1,5 @@
+import { HORIZONTAL_SPACING, VERTICAL_SPACING } from "./constants.js";
 import { Person } from "./person.js";
-
-/** Amount of horizontal space between profiles proportionally to a profile. */
-let HORIZONTAL_SPACING = 0.2;
-/** Amount of vertical space between profiles proportionally to a profile. */
-let VERTICAL_SPACING = 1.0;
 
 function extractNodes(root, findRelatives) {
   let node = {

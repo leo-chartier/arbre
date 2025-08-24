@@ -1,7 +1,5 @@
 import { CanvasManager } from "./canvasmanager.js";
-import { draw } from "./draw.js";
 import { Person } from "./person.js";
-import { generate } from "./graph.js";
 
 // Fetch informations
 console.debug("Fetching identities")
@@ -16,7 +14,8 @@ let root = Person.extractPeople(identities, unions, rootId);
 
 // Draw the tree
 const canvas = document.getElementById("treeCanvas");
-const manager = new CanvasManager(canvas, (ctx) => draw(ctx, generate(root)));
+const manager = new CanvasManager(canvas, root);
 
 // Link the elements
 document.getElementById("reset").onclick = manager.reset.bind(manager);
+document.getElementById("download").onclick = () => manager.downloadImage(`arbre de ${root.identity.firstnames} ${root.identity.lastname}.png`);
