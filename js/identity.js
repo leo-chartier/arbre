@@ -11,8 +11,9 @@ export class Identity {
    * @param {string} [pob] City name of place of birth
    * @param {Date} [dod] Date of death
    * @param {string} [pod] City name of place of death
+   * @param {string} [picture] URL of this person's picture
    */
-  constructor(id, gender, lastname, firstnames, dob, pob, dod, pod) {
+  constructor(id, gender, lastname, firstnames, dob, pob, dod, pod, picture) {
     if (!isNonEmptyString(id)) {
       throw new Error(`Invalid id for identity: "${id}"`);
     }
@@ -25,6 +26,7 @@ export class Identity {
     this.pob = pob ?? undefined;
     this.dod = dod instanceof Date ? dod : undefined;
     this.pod = pod ?? undefined;
+    this.picture = picture ?? undefined;
   }
 
   /**
@@ -42,6 +44,7 @@ export class Identity {
       data.pob,
       data.dod ? new Date(data.dod.replace("/", "-")) : undefined,
       data.pod,
+      data.picture,
     );
   }
 }

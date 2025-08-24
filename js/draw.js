@@ -21,11 +21,6 @@ const GENDER_COLORS = {
   [Gender.OTHER]: "tan",
 };
 
-// TODO: Dynamically get each pfp
-let pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
-// pfp.onload = () => requestAnimationFrame(draw);
-pfp.src = `https://gravatar.com/avatar/000000000000000000000000000000000000000000000000000000?d=mp&s=${PROFILE_HEIGHT}`;
-
 /**
  * Draws the tree on the canvas.
  * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
@@ -70,8 +65,11 @@ function drawLines(ctx, x1, y1, x2, y2) {
  * @param {Coordinates} position - Unscaled position for the profile.
  */
 function drawPerson(ctx, identity, position) {
-  // TODO: Get proper pfp
-  // let pfp;
+  let pfp;
+  if (identity.picture) {
+    pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
+    pfp.src = identity.picture;
+  }
 
   if (!identity || !position) return;
   
@@ -83,37 +81,43 @@ function drawPerson(ctx, identity, position) {
   ];
   
   // Backgrounds
+  let pfp_width = pfp ? pfp.width : PROFILE_HEIGHT * PFP_ASPECT_RATIO;
+  let pfp_height = pfp ? pfp.height : PROFILE_HEIGHT;
   let cx = PROFILE_WIDTH * position.x;
   let cy = PROFILE_HEIGHT * position.y;
   let x0 = cx - PROFILE_WIDTH / 2;
-  let y0 = cy - pfp.height / 2;
-  ctx.fillStyle = GENDER_COLORS[identity.gender];
-  ctx.fillRect(x0, y0, pfp.width, pfp.height);
+  let y0 = cy - PROFILE_HEIGHT / 2;
+  let x1 = cx - PROFILE_WIDTH / 2;
+  let y1 = cy - pfp_height / 2;
   ctx.fillStyle = "white";
-  ctx.fillRect(x0 + pfp.width, y0, PROFILE_WIDTH - pfp.width, pfp.height);
+  ctx.fillRect(x0, y0, PROFILE_WIDTH, PROFILE_HEIGHT);
+  ctx.fillStyle = GENDER_COLORS[identity.gender];
+  ctx.fillRect(x1, y1, pfp_width, pfp_height);
   
   // Draw the pfp covering the frame and cropping the overflow
-  if (pfp.naturalWidth / pfp.naturalHeight > PFP_ASPECT_RATIO) {
-    let padding = pfp.naturalWidth - pfp.width * pfp.naturalHeight / pfp.height;
-    ctx.drawImage(pfp, padding / 2, 0, pfp.naturalWidth - padding, pfp.naturalHeight, x0, y0, pfp.width, pfp.height);
-  } else {
-    let padding = pfp.naturalHeight - pfp.height * pfp.naturalWidth / pfp.width;
-    ctx.drawImage(pfp, 0, padding / 2, pfp.naturalWidth, pfp.naturalHeight - padding, x0, y0, pfp.width, pfp.height);
+  if (pfp) {
+    if (pfp.naturalWidth / pfp.naturalHeight > PFP_ASPECT_RATIO) {
+      let padding = pfp.naturalWidth - pfp.width * pfp.naturalHeight / pfp.height;
+      ctx.drawImage(pfp, padding / 2, 0, pfp.naturalWidth - padding, pfp.naturalHeight, x1, y1, pfp_width, pfp_height);
+    } else {
+      let padding = pfp.naturalHeight - pfp.height * pfp.naturalWidth / pfp.width;
+      ctx.drawImage(pfp, 0, padding / 2, pfp.naturalWidth, pfp.naturalHeight - padding, x1, y1, pfp_width, pfp_height);
+    }
   }
 
   // Borders
   ctx.fillStyle = "black";
-  ctx.strokeRect(x0, y0, pfp.width, pfp.height);
-  ctx.strokeRect(x0 + pfp.width, y0, PROFILE_WIDTH - pfp.width, pfp.height);
+  ctx.strokeRect(x1, y1, pfp_width, pfp_height);
+  ctx.strokeRect(x0, y0, PROFILE_WIDTH, PROFILE_HEIGHT);
 
   // Text
-  let maxWidth = (PROFILE_WIDTH - pfp.width) * 0.9;
+  let maxWidth = (PROFILE_WIDTH - pfp_width) * 0.9;
   let lineHeight = (PROFILE_HEIGHT / lines.length) * 0.9;
-  let x1 = cx + pfp.width / 2;
-  let y1 = cy - (lines.length - 1) * lineHeight / 2;
+  let x2 = cx + pfp_width / 2;
+  let y2 = cy - (lines.length - 1) * lineHeight / 2;
   ctx.font = `${lineHeight*0.75}px Arial`;
   ctx.textAlign = "center";
   for (let [i, line] of lines.entries()) {
-    ctx.fillText(line, x1, y1 + i * lineHeight, maxWidth);
+    ctx.fillText(line, x2, y2 + i * lineHeight, maxWidth);
   }
 }

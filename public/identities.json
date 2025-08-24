@@ -5,7 +5,8 @@
     "lastname": "CHARTIER",
     "gender": 1,
     "dob": "2001/10/27",
-    "pob": "Dijon"
+    "pob": "Dijon",
+    "picture": "https://gravatar.com/avatar/c8a06da2c80a003656e90ab4afa49ea8?s=2000&d=blank"
   },
   {
     "id": "1",
@@ -16,7 +17,8 @@
   {
     "id": "2",
     "firstnames": "Alice",
-    "gender": 2
+    "gender": 2,
+    "picture": "pictures/mp.jpg"
   },
   {
     "id": "3",
