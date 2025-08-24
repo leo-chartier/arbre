@@ -105,11 +105,18 @@ function calculateCoords(nodes, horizontal_spacing, vertical_spacing, findRelati
 
 function offset(root, dx, dy, findRelativesNodes) {
   const todo = [root];
+  const done = [];
   while (todo.length) {
-    const node = todo.pop();
-    todo.push(...findRelativesNodes(node));
+    let node = todo.pop();
+    if (!node?.coords || done.includes(node))
+      continue;
     node.coords.x += dx;
     node.coords.y += dy;
+
+    todo.push(...findRelativesNodes(node));
+    if (node.right)
+      todo.push(node.right);
+    done.push(node);
   }
 }
 
