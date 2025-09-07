@@ -1,3 +1,5 @@
+import { Gender } from "./types.js";
+
 /** The aspect ratio of a profile's picture. */
 export const PFP_ASPECT_RATIO = 2/3;
 
@@ -13,5 +15,13 @@ export const HORIZONTAL_SPACING = 0.2;
 /** Amount of vertical space between profiles proportionally to a profile. */
 export const VERTICAL_SPACING = 1.0;
 
-/** The formatter to display dates */
-export const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR");
+/**
+ * The colors associated with each gender.
+ * @type {Object<Gender, string>}
+ */
+export const GENDER_COLORS = {
+  [Gender.OTHER]: "gray",
+  [Gender.MALE]: "blue",
+  [Gender.FEMALE]: "hotpink",
+  [Gender.OTHER]: "tan",
+};

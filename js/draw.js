@@ -1,17 +1,8 @@
-import { DATE_FORMATTER, HORIZONTAL_SPACING, PFP_ASPECT_RATIO, PROFILE_HEIGHT, PROFILE_WIDTH, VERTICAL_SPACING } from "./constants.js";
+import { GENDER_COLORS, HORIZONTAL_SPACING, PROFILE_HEIGHT, PROFILE_WIDTH, VERTICAL_SPACING } from "./constants.js";
 import { Identity } from "./identity.js";
 import { Gender } from "./types.js";
 
-/**
- * The colors associated with each gender.
- * @type {Object<Gender, string>}
- */
-const GENDER_COLORS = {
-  [Gender.OTHER]: "gray",
-  [Gender.MALE]: "blue",
-  [Gender.FEMALE]: "hotpink",
-  [Gender.OTHER]: "tan",
-};
+const cachedImages = new Map();
 
 /**
  * Draws the tree on the canvas.
@@ -19,99 +10,15 @@ const GENDER_COLORS = {
  * @param {Graph} graph - The graph to draw
  */
 export function draw(ctx, graph) {
-  ctx.beginPath();
   for (const edge of graph.edges) {
     const coord1 = graph.nodes.find((n) => n.person.identity.id == edge.a)?.coords;
     const coord2 = graph.nodes.find((n) => n.person.identity.id == edge.b)?.coords;
     if (coord1 && coord2)
-      drawLines(ctx, coord1.x, coord1.y, coord2.x, coord2.y);
+      drawLines(ctx, coord1.x * PROFILE_WIDTH, coord1.y * PROFILE_HEIGHT, coord2.x * PROFILE_WIDTH, coord2.y * PROFILE_HEIGHT, VERTICAL_SPACING * PROFILE_HEIGHT / 4);
   }
-  ctx.stroke();
 
   for (const node of graph.nodes) {
-    drawPerson(ctx, node.person.identity, node.coords);
-  }
-}
-
-/**
- * Draws a broken line between two points
- * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
- * @param {*} x1 - The x coordinate of the first point
- * @param {*} y1 - The y coordinate of the first point
- * @param {*} x2 - The x coordinate of the second point
- * @param {*} y2 - The y coordinate of the second point
- */
-function drawLines(ctx, x1, y1, x2, y2) {
-  const middle = (y1 + y2) / 2;
-  ctx.fillStyle = "black";
-  ctx.moveTo(x1 * PROFILE_WIDTH, y1 * PROFILE_HEIGHT);
-  ctx.lineTo(x1 * PROFILE_WIDTH, middle * PROFILE_HEIGHT);
-  ctx.lineTo(x2 * PROFILE_WIDTH, middle * PROFILE_HEIGHT);
-  ctx.lineTo(x2 * PROFILE_WIDTH, y2 * PROFILE_HEIGHT);
-}
-
-/**
- * Draw a single person.
- * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
- * @param {Identity} identity - Data about the person.
- * @param {Coordinates} position - Unscaled position for the profile.
- */
-function drawPerson(ctx, identity, position) {
-  let pfp;
-  if (identity.picture) {
-    pfp = new Image(PROFILE_HEIGHT * PFP_ASPECT_RATIO, PROFILE_HEIGHT);
-    pfp.crossOrigin = "anonymous"; // Prevent CORS problem when downloading the canvas
-    pfp.src = identity.picture;
-  }
-
-  if (!identity || !position) return;
-  
-  let lines = [
-    `${identity.firstnames || "?"} ${identity.lastname?.toUpperCase() || "?"}`,
-    "",
-    identity.dob ? `* ${DATE_FORMATTER.format(identity.dob)}` : "",
-    identity.dod ? `\u2020 ${DATE_FORMATTER.format(identity.dod)}` : "",
-  ];
-  
-  // Backgrounds
-  let pfp_width = pfp ? pfp.width : PROFILE_HEIGHT * PFP_ASPECT_RATIO;
-  let pfp_height = pfp ? pfp.height : PROFILE_HEIGHT;
-  let cx = PROFILE_WIDTH * position.x;
-  let cy = PROFILE_HEIGHT * position.y;
-  let x0 = cx - PROFILE_WIDTH / 2;
-  let y0 = cy - PROFILE_HEIGHT / 2;
-  let x1 = cx - PROFILE_WIDTH / 2;
-  let y1 = cy - pfp_height / 2;
-  ctx.fillStyle = "white";
-  ctx.fillRect(x0, y0, PROFILE_WIDTH, PROFILE_HEIGHT);
-  ctx.fillStyle = GENDER_COLORS[identity.gender];
-  ctx.fillRect(x1, y1, pfp_width, pfp_height);
-  
-  // Draw the pfp covering the frame and cropping the overflow
-  if (pfp) {
-    if (pfp.naturalWidth / pfp.naturalHeight > PFP_ASPECT_RATIO) {
-      let padding = pfp.naturalWidth - pfp.width * pfp.naturalHeight / pfp.height;
-      ctx.drawImage(pfp, padding / 2, 0, pfp.naturalWidth - padding, pfp.naturalHeight, x1, y1, pfp_width, pfp_height);
-    } else {
-      let padding = pfp.naturalHeight - pfp.height * pfp.naturalWidth / pfp.width;
-      ctx.drawImage(pfp, 0, padding / 2, pfp.naturalWidth, pfp.naturalHeight - padding, x1, y1, pfp_width, pfp_height);
-    }
-  }
-
-  // Borders
-  ctx.fillStyle = "black";
-  ctx.strokeRect(x1, y1, pfp_width, pfp_height);
-  ctx.strokeRect(x0, y0, PROFILE_WIDTH, PROFILE_HEIGHT);
-
-  // Text
-  let maxWidth = (PROFILE_WIDTH - pfp_width) * 0.9;
-  let lineHeight = (PROFILE_HEIGHT / lines.length) * 0.9;
-  let x2 = cx + pfp_width / 2;
-  let y2 = cy - (lines.length - 1) * lineHeight / 2;
-  ctx.font = `${lineHeight*0.75}px Arial`;
-  ctx.textAlign = "center";
-  for (let [i, line] of lines.entries()) {
-    ctx.fillText(line, x2, y2 + i * lineHeight, maxWidth);
+    drawProfileCard(ctx, node.person.identity, node.coords.x * PROFILE_WIDTH, node.coords.y * PROFILE_HEIGHT, PROFILE_WIDTH, PROFILE_HEIGHT);
   }
 }
 
@@ -124,4 +31,247 @@ export function getBoundingBoxes(graph) {
     (Math.max(...xs) + 0.5 + HORIZONTAL_SPACING) * PROFILE_WIDTH,
     (Math.max(...ys) + 0.5 + VERTICAL_SPACING) * PROFILE_HEIGHT,
   ];
+}
+
+/***************************
+ * Generated using ChatGPT *
+ *   and adapted by hand   *
+ ***************************/
+
+// https://chatgpt.com/share/68be0f0c-2a70-800d-b556-6fdd1692dcbe
+
+/**
+ * Draw a family profile card on a canvas.
+ */
+function drawProfileCard(ctx, identity, cx, cy, width, height) {
+  // Styles
+  const x = cx - width / 2;
+  const y = cy - height / 2;
+  const padding = 8;
+  const avatarSize = Math.min(width, height) - 2 * padding;
+  const avatarX = x + padding;
+  const avatarY = y + padding;
+  const contentX = avatarX + avatarSize + padding;
+  let contentY = avatarY;
+  const contentWidth = width - (avatarSize + padding * 3);
+  const cornerRadius = 12;
+
+  // Card background
+  ctx.save();
+  // shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.12)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 4;
+  drawRoundRect(ctx, x, y, width, height, cornerRadius);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+
+  // Thin border
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#DDD';
+  drawRoundRect(ctx, x, y, width, height, cornerRadius);
+  ctx.stroke();
+
+  // Avatar (image or placeholder)
+  const fullName = (identity.firstnames || '').trim() + ' ' + (identity.lastname || '').trim();
+  const initials = fullName
+    .split(/\s+/)
+    .map(s => s[0] || '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || '?';
+
+  drawAvatar(ctx, avatarX, avatarY, avatarSize, identity.picture, initials);
+
+  // Gender marker: small shape top-right of avatar
+  if (identity.gender) {
+    const gSize = Math.round(avatarSize * 0.18);
+    const gx = avatarX + avatarSize - gSize;
+    const gy = avatarY - Math.round(gSize * 0.35);
+    drawGenderMarker(ctx, gx, gy, gSize, identity.gender);
+  }
+
+  // Text content
+  ctx.fillStyle = '#222';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+
+  // Name
+  const nameFontSize = Math.round(height * 0.15);
+  ctx.font = `bold ${nameFontSize}px sans-serif`;
+  const names = (fullName || '???').split(/\s+/);
+  while (names.length > 0) {
+    let line = names.shift() || '';
+    while (names.length > 0 && ctx.measureText(line + ' ' + names[0]).width <= contentWidth)
+      line += ' ' + names.shift();
+    ctx.fillText(line, contentX, contentY);
+    contentY += Math.round(nameFontSize * 1.1);
+  }
+
+  // Dates line
+  if (identity.dob || identity.dod) {
+    const dateFontSize = nameFontSize * 0.78;
+    ctx.font = `${Math.round(dateFontSize)}px sans-serif`;
+    const dobText = formatDate(identity.dob);
+    const dodText = formatDate(identity.dod);
+    const datesLine = `${dobText} - ${dodText}`;
+    ctx.fillStyle = '#444';
+    ctx.fillText(fitText(ctx, datesLine, contentWidth, ctx.font), contentX, contentY);
+    contentY += Math.round(dateFontSize * 1.1);
+  }
+
+  // Places
+  const placeFontSize = Math.round(nameFontSize * 0.7);
+  ctx.font = `${placeFontSize}px sans-serif`;
+  ctx.fillStyle = '#555';
+  if (identity.pob) {
+    const pob = (identity.gender == Gender.FEMALE ? 'Née' : 'Né') + ': ' + identity.pob;
+    ctx.fillText(fitText(ctx, pob, contentWidth, ctx.font), contentX, contentY);
+    contentY += Math.round(placeFontSize * 1.1);
+  }
+  if (identity.pod) {
+    const pod = (identity.gender == Gender.FEMALE ? 'Décédée' : 'Décédé') + ': ' + identity.pod;
+    ctx.fillText(fitText(ctx, pod, contentWidth, ctx.font), contentX, contentY);
+    contentY += Math.round(placeFontSize * 1.1);
+  }
+
+  ctx.restore();
+}
+
+function drawRoundRect(ctx, x, y, w, h, r) {
+  const x2 = x + w;
+  const y2 = y + h;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x2, y,  x2, y2, r);
+  ctx.arcTo(x2, y2, x,  y2, r);
+  ctx.arcTo(x,  y2, x,  y,  r);
+  ctx.arcTo(x,  y,  x2, y,  r);
+  ctx.closePath();
+}
+
+function fitText(ctx, text, maxW, baseFont) {
+  ctx.font = baseFont;
+  if (ctx.measureText(text).width <= maxW) return text;
+  // truncate with ellipsis
+  while (text.length > 0 && ctx.measureText(text + '…').width > maxW) {
+    text = text.slice(0, -1);
+  }
+  return text + '…';
+}
+
+function drawAvatar(ctx, avatarX, avatarY, avatarSize, url, initials) {
+  const img = cachedImages.get(url);
+  if (url && img) {
+    ctx.save();
+    drawRoundRect(ctx, avatarX, avatarY, avatarSize, avatarSize, 8);
+    ctx.clip();
+    // fill background lightly while image draws
+    ctx.fillStyle = '#F6F6F6';
+    ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
+    // draw centered cover
+    let iw = img.width, ih = img.height;
+    const scale = Math.max(avatarSize/iw, avatarSize/ih);
+    const dw = iw * scale, dh = ih * scale;
+    const dx = avatarX - (dw - avatarSize) / 2;
+    const dy = avatarY - (dh - avatarSize) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.restore();
+  } else {
+    drawPlaceholderAvatar(ctx, avatarX, avatarY, avatarSize, initials);
+  }
+}
+
+function drawPlaceholderAvatar(ctx, cx, cy, size, initials) {
+  ctx.save();
+  drawRoundRect(ctx, cx, cy, size, size, 8);
+  ctx.clip();
+  ctx.fillStyle = '#EEE';
+  ctx.fillRect(cx, cy, size, size);
+  ctx.fillStyle = '#AAA';
+  ctx.font = `${Math.round(size * 0.32)}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials, cx + size / 2, cy + size / 2);
+  ctx.restore();
+}
+
+function drawGenderMarker(ctx, x, y, size, gender) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.beginPath();
+  ctx.fillStyle = GENDER_COLORS[gender];
+  /*
+  switch (gender) {
+    case Gender.MALE:
+      // square
+      ctx.rect(0, 0, size, size);
+      ctx.fill();
+      break;
+    case Gender.FEMALE:
+      // circle
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    case Gender.OTHER:
+      // triangle for 'other'
+      ctx.moveTo(size / 2, 0);
+      ctx.lineTo(size, size);
+      ctx.lineTo(0, size);
+      ctx.closePath();
+      ctx.fill();
+      break;
+  }
+  */
+  ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
+ * Draws a broken line between two points
+ * @param {CanvasRenderingContext2D} ctx - The canvas's 2D context
+ * @param {number} x1 - The x coordinate of the first point
+ * @param {number} y1 - The y coordinate of the first point
+ * @param {number} x2 - The x coordinate of the second point
+ * @param {number} y2 - The y coordinate of the second point
+ * @param {number} radius - The curve of the lines
+ */
+function drawLines(ctx, x1, y1, x2, y2, radius) {
+  if (x1 > x2)
+    [x1, y1, x2, y2] = [x2, y2, x1, y1];
+
+  const r = Math.min(Math.abs(x2 - x1), radius);
+  const m = (y1 + y2) / 2;
+
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.arcTo(x1, m, x1 + r, m,  r);
+  ctx.arcTo(x2, m, x2,     y2, r);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = "#999";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  // Attempt parse; if fails return original
+  const dt = new Date(d);
+  if (isNaN(dt)) return d;
+  return dt.toLocaleDateString();
+}
+
+export async function preloadPictures(urls) {
+  return Promise.all(urls.map(
+    url => new Promise((resolve, reject) => {
+      const img = new Image();
+      cachedImages.set(url, img);
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.crossOrigin = "anonymous"; // Prevent CORS problem when downloading the canvas
+      img.src = url;
+    })
+  ));
 }

@@ -1,4 +1,5 @@
 import { CanvasManager } from "./canvasmanager.js";
+import { preloadPictures } from "./draw.js";
 import { Person } from "./person.js";
 
 // Fetch informations
@@ -6,6 +7,8 @@ console.debug("Fetching identities")
 const identities = await (await fetch('./public/identities.json')).json();
 console.debug("Fetching unions")
 const unions = await (await fetch('./public/unions.json')).json();
+
+await preloadPictures(identities.map(data => data.picture).filter(url => url));
 
 // Get all people from the root
 const rootId = Object.keys(identities)[0];
