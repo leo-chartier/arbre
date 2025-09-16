@@ -187,15 +187,16 @@ export class CanvasManager {
     requestAnimationFrame(this.redraw);
   }
 
-  downloadImage(filename = "arbre.png") {
+  downloadImage(filename = "arbre.png", scale = 2) {
     // Backup the settings
     const oldWidth = this.canvas.width;
     const oldHeight = this.canvas.height;
 
     // Reposition and generate the image
     const [x0, y0, x1, y1] = getBoundingBoxes(this.graph);
-    this.canvas.width = x1 - x0;
-    this.canvas.height = y1 - y0;
+    this.canvas.width = (x1 - x0) * scale;
+    this.canvas.height = (y1 - y0) * scale;
+    this.ctx.scale(scale, scale);
     this.ctx.translate(-x0, -y0);
     draw(this.ctx, this.graph);
     const image = this.canvas.toDataURL("image/png");
