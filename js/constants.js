@@ -15,6 +15,9 @@ export const HORIZONTAL_SPACING = 0.2;
 /** Amount of vertical space between profiles proportionally to a profile. */
 export const VERTICAL_SPACING = 1.0;
 
+/** Radius of the corners for the profiles' rectangles */
+export const CORNER_RADIUS = 12;
+
 /**
  * The colors associated with each gender.
  * @type {Object<Gender, string>}

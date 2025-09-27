@@ -1,6 +1,6 @@
 // Adapted from https://codepen.io/chengarda/pen/wRxoyB
 
-import { draw, getBoundingBoxes } from "./draw.js"
+import { draw, getBoundingBoxes, getNodeAt } from "./draw.js"
 import { generate } from "./graph.js"
 
 export class CanvasManager {
@@ -15,12 +15,13 @@ export class CanvasManager {
   constructor(canvas, root) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
+    this.originalRoot = root;
     this.root = root;
-    this.graph = generate(root);
 
     this.cameraOffset = { x: 0, y: 0 }; // Automatically set to half the window (center) when first resized
     this.isDragging = false;
     this.dragStart = { x: 0, y: 0 };
+    this.downCoords = { x: 0, y: 0 };
     
     this.initialPinchDistance = null;
     this.lastZoom = this.cameraZoom;
@@ -67,7 +68,13 @@ export class CanvasManager {
     this.cameraOffset = { x: document.body.clientWidth / 2, y: document.body.clientHeight / 2 };
     this.cameraZoom = 1;
     
+    this.graph = generate(this.root);
     this.redraw();
+  }
+
+  resetRoot() {
+    this.root = this.originalRoot;
+    this.reset();
   }
 
   /**
@@ -79,10 +86,21 @@ export class CanvasManager {
     if (event.touches && event.touches.length == 1) {
       // Touch
       return { x: event.touches[0].clientX, y: event.touches[0].clientY };
-    } else if (event.clientX && event.clientY) {
+    } else if (event instanceof MouseEvent) {
       // Mouse
       return { x: event.clientX, y: event.clientY };
     }
+  }
+
+  screenToCanvas(coord) {
+    // Same thing the redraw method does, but in calculation form
+    const prescalingX = coord.x - this.canvas.width / 2;
+    const prescalingY = coord.y - this.canvas.height / 2;
+    const scaledX = prescalingX / this.cameraZoom;
+    const scaledY = prescalingY / this.cameraZoom;
+    const offsetedX = scaledX + this.canvas.width / 2 - this.cameraOffset.x;
+    const offsetedY = scaledY + this.canvas.height / 2 - this.cameraOffset.y;
+    return { x: offsetedX, y: offsetedY };
   }
 
   /**
@@ -109,8 +127,9 @@ export class CanvasManager {
    */
   onPointerDown(event) {
     this.isDragging = true;
-    this.dragStart.x = this.getEventLocation(event).x / this.cameraZoom - this.cameraOffset.x;
-    this.dragStart.y = this.getEventLocation(event).y / this.cameraZoom - this.cameraOffset.y;
+    this.downCoords = this.getEventLocation(event);
+    this.dragStart.x = this.downCoords.x / this.cameraZoom - this.cameraOffset.x;
+    this.dragStart.y = this.downCoords.y / this.cameraZoom - this.cameraOffset.y;
   }
 
   /**
@@ -134,6 +153,18 @@ export class CanvasManager {
     // Touch
     this.initialPinchDistance = null;
     this.lastZoom = this.cameraZoom;
+
+    const coord = this.getEventLocation(event);
+    const dx = Math.abs(this.downCoords.x - coord.x);
+    const dy = Math.abs(this.downCoords.y - coord.y);
+    if (dx < 10 && dy < 10) {
+      // Click
+      const root = getNodeAt(this.screenToCanvas(coord), this.graph)?.person;
+      if (root && root != this.root) {
+        this.root = root;
+        this.reset();
+      }
+    }
   }
 
   /**
@@ -143,7 +174,7 @@ export class CanvasManager {
    */
   handleTouch(event, singleTouchHandler) {
     if (event.touches.length == 1) {
-      this.singleTouchHandler(event);
+      singleTouchHandler(event);
     } else if (event.type == "touchmove" && event.touches.length == 2) {
       this.isDragging = false;
       this.handlePinch(event);

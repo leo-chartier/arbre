@@ -20,5 +20,5 @@ const canvas = document.getElementById("treeCanvas");
 const manager = new CanvasManager(canvas, root);
 
 // Link the elements
-document.getElementById("reset").onclick = manager.reset.bind(manager);
+document.getElementById("reset").onclick = manager.resetRoot.bind(manager);
 document.getElementById("download").onclick = () => manager.downloadImage(`arbre de ${root.identity.firstnames} ${root.identity.lastname}.png`);

@@ -1,5 +1,4 @@
-import { GENDER_COLORS, HORIZONTAL_SPACING, PROFILE_HEIGHT, PROFILE_WIDTH, VERTICAL_SPACING } from "./constants.js";
-import { Identity } from "./identity.js";
+import { CORNER_RADIUS, GENDER_COLORS, HORIZONTAL_SPACING, PROFILE_HEIGHT, PROFILE_WIDTH, VERTICAL_SPACING } from "./constants.js";
 import { Gender } from "./types.js";
 
 const cachedImages = new Map();
@@ -33,6 +32,27 @@ export function getBoundingBoxes(graph) {
   ];
 }
 
+export function getNodeAt(coord, graph) {
+  const r2 = CORNER_RADIUS * CORNER_RADIUS;
+
+  for (const node of graph.nodes) {
+    // De-normalize the coords
+    const cx = node.coords.x * PROFILE_WIDTH;
+    const cy = node.coords.y * PROFILE_HEIGHT;
+    
+    // Fit in the bottom-right quadrant since it's symmetrical
+    const x = Math.abs(coord.x - cx);
+    const y = Math.abs(coord.y - cy);
+    const rx = x - (PROFILE_WIDTH / 2 - CORNER_RADIUS);
+    const ry = y - (PROFILE_HEIGHT / 2 - CORNER_RADIUS);
+
+    if (x <= PROFILE_WIDTH / 2 && y <= PROFILE_HEIGHT / 2 && (rx <= 0 || ry <= 0 || (rx * rx + ry * ry) <= r2))
+      return node;
+  }
+
+  return null;
+}
+
 /***************************
  * Generated using ChatGPT *
  *   and adapted by hand   *
@@ -54,7 +74,6 @@ function drawProfileCard(ctx, identity, cx, cy, width, height) {
   const contentX = avatarX + avatarSize + padding;
   let contentY = avatarY;
   const contentWidth = width - (avatarSize + padding * 3);
-  const cornerRadius = 12;
 
   // Card background
   ctx.save();
@@ -62,7 +81,7 @@ function drawProfileCard(ctx, identity, cx, cy, width, height) {
   ctx.shadowColor = 'rgba(0,0,0,0.12)';
   ctx.shadowBlur = 8;
   ctx.shadowOffsetY = 4;
-  drawRoundRect(ctx, x, y, width, height, cornerRadius);
+  drawRoundRect(ctx, x, y, width, height, CORNER_RADIUS);
   ctx.fillStyle = '#FFFFFF';
   ctx.fill();
   ctx.shadowColor = 'transparent';
@@ -70,7 +89,7 @@ function drawProfileCard(ctx, identity, cx, cy, width, height) {
   // Thin border
   ctx.lineWidth = 1;
   ctx.strokeStyle = '#DDD';
-  drawRoundRect(ctx, x, y, width, height, cornerRadius);
+  drawRoundRect(ctx, x, y, width, height, CORNER_RADIUS);
   ctx.stroke();
 
   // Avatar (image or placeholder)
