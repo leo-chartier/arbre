@@ -8,6 +8,8 @@ const identities = await (await fetch('./public/identities.json')).json();
 console.debug("Fetching unions")
 const unions = await (await fetch('./public/unions.json')).json();
 
+console.log(await (await fetch('/api/identities')).json());
+
 await preloadPictures(identities.map(data => data.picture).filter(url => url));
 
 // Get all people from the root
