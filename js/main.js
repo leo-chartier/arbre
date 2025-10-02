@@ -8,7 +8,8 @@ const identities = await (await fetch('./public/identities.json')).json();
 console.debug("Fetching unions")
 const unions = await (await fetch('./public/unions.json')).json();
 
-console.log((await fetch('/api/identities')).body);
+const response = await fetch('/api/identities');
+console.log(await response.text());
 
 await preloadPictures(identities.map(data => data.picture).filter(url => url));
 
