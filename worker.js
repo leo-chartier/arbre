@@ -2,6 +2,10 @@ export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
 
+    return new Response(
+      "it works"
+    );
+
     if (pathname === "/api/identities") {
       const { results } = await env.arbre.prepare(
         "SELECT * FROM identities WHERE id = ?"
