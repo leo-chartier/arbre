@@ -1,5 +1,10 @@
 {
   "observability": {
     "enabled": true
-  }
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "arbre",
+    "database_id": "3a21259a-e277-4c72-8c59-a8e5ec463d95"
+  }]
 }
