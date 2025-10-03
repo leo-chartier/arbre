@@ -1,6 +1,5 @@
 export async function onRequest(context) {
-  return new Response(`SELECT * FROM identities WHERE id = ${context.params.id}`);
-
+  try {
   const { results } = await env.DB.prepare(
     `SELECT * FROM identities WHERE id = ${context.params.id}`
   ).run();
@@ -8,4 +7,7 @@ export async function onRequest(context) {
   return new Response(JSON.stringify(results), {
     headers: { 'Content-Type': 'application/json' }
   });
+  } catch (error) {
+    return new Response(error.toString());
+  }
 }
