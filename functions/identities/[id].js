@@ -1,6 +1,6 @@
 export async function onRequest(context) {
   try {
-  const { results } = await context.env.DB.prepare(
+  const { results } = await context.env.arbre.prepare(
     `SELECT * FROM identities WHERE id = ${context.params.id}`
   ).run();
 
