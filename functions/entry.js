@@ -1,6 +1,5 @@
-export default {
-  async fetch(request, env, ctx) {
-    const { pathname } = new URL(request.url);
+export function onRequest(context) {
+    // const { pathname } = new URL(request.url);
 
     return new Response(
       "it works"
