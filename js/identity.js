@@ -54,24 +54,29 @@ export class Identity {
    * @returns {Promise<Identity | null>} The identity or null if something went wrong
    */
   static async fromDB(id) {
-    const response = await fetch(`/identity/${id}`);
-    if (!response.ok)
-      return null;
+    try {
+      const response = await fetch(`/identity/${id}`);
+      if (!response.ok)
+        return null;
 
-    const data = await response.json();
-    if (!data.id)
-      return null;
+      const data = await response.json();
+      if (!data.id)
+        return null;
 
-    return new Identity(
-      data.id,
-      Object.values(Gender).find(g => g === data.gender) ?? Gender.UNKNOWN,
-      data.lastname,
-      data.firstnames,
-      undefined, // TODO: Use dob as parts
-      data.pob,
-      undefined, // TODO: Use dod as parts
-      data.pod,
-      data.picture,
-    );
+      return new Identity(
+        data.id,
+        Object.values(Gender).find(g => g === data.gender) ?? Gender.UNKNOWN,
+        data.lastname,
+        data.firstnames,
+        undefined, // TODO: Use dob as parts
+        data.pob,
+        undefined, // TODO: Use dod as parts
+        data.pod,
+        data.picture,
+      );
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   }
 }
