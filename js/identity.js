@@ -60,7 +60,6 @@ export class Identity {
       if (!response.ok)
         return null;
 
-      console.log(await response.text());
       const data = await response.json();
       if (!data.id)
         return null;

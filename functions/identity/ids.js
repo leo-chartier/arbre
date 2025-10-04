@@ -1,10 +1,9 @@
 export async function onRequest(context) {
   try {
     const { results } = await context.env.DB.prepare(
-      "SELECT * FROM identities WHERE id = ?"
+      "SELECT id FROM identities"
     )
-    .bind(context.params.id)
-    .first();
+    .run();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' }
