@@ -14,7 +14,6 @@ await preloadPictures(identities.map(data => data.picture).filter(url => url));
 const rootId = Object.keys(identities)[0];
 console.debug("Building relations")
 let root = await Person.extractPeople(identities, unions, rootId);
-console.log(root);
 
 // Draw the tree
 const canvas = document.getElementById("treeCanvas");

@@ -65,16 +65,16 @@ export class Person {
     if (!rootId)
       throw new Error("Invalid root ID.");
 
+    const response = await fetch("/identity/ids");
+    if (!response.ok)
+      return new Object();
+    const ids = await response.json();
+    
     /** @type {Map<string, Person>} */
-    // const people = Object.fromEntries(identities.map(
-    //   data => [data.id, new Person(Identity.fromJSON(data))],
-    // ));
-    // TODO: Iterate on all values
-    const people = {
-      rootId: new Person(await Identity.fromDB(rootId))
-    }
-    console.log(people);
-
+    const people = Object.fromEntries(Promise.all(ids.map(
+      async (id) => [id, new Person(await Identity.fromDB(id))],
+    )));
+    
     for (const data of unions)
       Union.fromJSON(data).link(people);
 

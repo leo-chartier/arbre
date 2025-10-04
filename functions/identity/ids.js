@@ -5,7 +5,7 @@ export async function onRequest(context) {
     )
     .run();
 
-    return new Response(JSON.stringify(results), {
+    return new Response(JSON.stringify(results.map(row => row.id)), {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {

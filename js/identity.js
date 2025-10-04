@@ -56,16 +56,13 @@ export class Identity {
   static async fromDB(id) {
     try {
       const response = await fetch(`/identity/${id}`);
-      console.log(response);
       if (!response.ok)
         return null;
 
       const rows = await response.json();
-      console.log(rows);
       if (!rows.length || !rows[0].id)
         return null;
       const data = rows[0];
-      console.log(data);
 
       return new Identity(
         data.id,
