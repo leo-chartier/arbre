@@ -4,7 +4,7 @@ export async function onRequest(context) {
       "SELECT * FROM identities WHERE id = ?"
     )
     .bind(context.params.id)
-    .first();
+    .all();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' }
