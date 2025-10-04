@@ -1,8 +1,9 @@
 export async function onRequest(context) {
   try {
-    const request = `SELECT * FROM unions WHERE parent1 = ? OR parent2 = ? OR children = ? OR children LIKE "?,%" OR children LIKE "%,?" OR children LIKE "%,?,%"`.replace("?", context.params.person);
-    return new Response(request);
-    const { results } = await context.env.DB.prepare(request).all();
+    const { results } = await context.env.DB.prepare(
+        `SELECT * FROM unions WHERE parent1 = ? OR parent2 = ? OR children = ? OR children LIKE "?,%" OR children LIKE "%,?" OR children LIKE "%,?,%"`
+        .replaceAll("?", context.params.person)
+    ).all();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' }
