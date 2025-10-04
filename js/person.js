@@ -59,7 +59,7 @@ export class Person {
    * @param {string | null} rootId The ID of the root person
    * @returns {Person} The root person
    */
-  static extractPeople(identities, unions, rootId) {
+  static async extractPeople(identities, unions, rootId) {
     if (!rootId)
       rootId = identities[0].id;
     if (!rootId)
@@ -71,8 +71,9 @@ export class Person {
     // ));
     // TODO: Iterate on all values
     const people = {
-      rootId: new Person(Identity.fromDB(rootId))
+      rootId: new Person(await Identity.fromDB(rootId))
     }
+    console.log(people);
 
     for (const data of unions)
       Union.fromJSON(data).link(people);
