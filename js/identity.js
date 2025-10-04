@@ -60,9 +60,12 @@ export class Identity {
       if (!response.ok)
         return null;
 
-      const data = await response.json()[0];
-      if (!data.id)
+      const rows = await response.json();
+      console.log(rows);
+      if (!rows.length || !rows[0].id)
         return null;
+      const data = rows[0];
+      console.log(data);
 
       return new Identity(
         data.id,
