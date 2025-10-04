@@ -1,7 +1,7 @@
 export async function onRequest(context) {
   try {
     const { results } = await context.env.DB.prepare(
-      `SELECT * FROM identities WHERE id = ${context.params.catchall[0]}`
+      `SELECT * FROM identities WHERE id = ${context.params.id}`
     ).run();
 
     return new Response(JSON.stringify(results), {

@@ -47,4 +47,31 @@ export class Identity {
       data.picture,
     );
   }
+  
+  /**
+   * Fetch an identity from the database
+   * @param {number} id The ID of the person
+   * @returns {Promise<Identity | null>} The identity or null if something went wrong
+   */
+  static async fromDB(id) {
+    const response = await fetch(`/identity/${id}`);
+    if (!response.ok)
+      return null;
+
+    const data = await response.json();
+    if (!data.id)
+      return null;
+
+    return new Identity(
+      data.id,
+      Object.values(Gender).find(g => g === data.gender) ?? Gender.UNKNOWN,
+      data.lastname,
+      data.firstnames,
+      undefined, // TODO: Use dob as parts
+      data.pob,
+      undefined, // TODO: Use dod as parts
+      data.pod,
+      data.picture,
+    );
+  }
 }

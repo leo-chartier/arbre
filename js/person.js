@@ -66,9 +66,13 @@ export class Person {
       throw new Error("Invalid root ID.");
 
     /** @type {Map<string, Person>} */
-    const people = Object.fromEntries(identities.map(
-      data => [data.id, new Person(Identity.fromJSON(data))],
-    ));
+    // const people = Object.fromEntries(identities.map(
+    //   data => [data.id, new Person(Identity.fromJSON(data))],
+    // ));
+    // TODO: Iterate on all values
+    const people = {
+      rootId: new Person(Identity.fromDB(rootId))
+    }
 
     for (const data of unions)
       Union.fromJSON(data).link(people);
