@@ -60,10 +60,7 @@ export class Identity {
       if (!response.ok)
         return null;
 
-      // const data = await response.json();
-      const text = await response.text();
-      console.log(text);
-      const data = JSON.parse(text);
+      const data = await response.json()[0];
       if (!data.id)
         return null;
 
