@@ -71,7 +71,7 @@ export class Person {
     const ids = await response.json();
     
     /** @type {Map<string, Person>} */
-    const people = Object.fromEntries(Promise.all(ids.map(
+    const people = Object.fromEntries(await Promise.all(ids.map(
       async (id) => [id, new Person(await Identity.fromDB(id))],
     )));
     
