@@ -76,8 +76,13 @@ export class Union {
   link(people) {
     for (const parentId of this.parents) {
       const parent = people[parentId];
+      if (!parent)
+        continue;
+
       for (const childId of this.children) {
         const child = people[childId];
+        if (!child)
+          continue;
 
         child.addParent(parent)
         parent.addChild(child);
