@@ -58,7 +58,7 @@ export class Union {
       return rows.map((data) => new Union(
         data.parent1,
         data.parent2,
-        data.children,
+        data.children.split(","),
         undefined, // TODO
         data.pom,
         undefined, // TODO
