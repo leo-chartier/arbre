@@ -43,17 +43,17 @@ export class Union {
   /**
    * Fetch the different unions a person is part of
    * @param {string} id The person's ID
-   * @returns {Promise<Union[] | null>}
+   * @returns {Promise<Union[]>}
    */
   static async fromDB(id) {
     try {
       const response = await fetch(`/union/${id}`);
       if (!response.ok)
-        return null;
+        return [];
 
       const rows = await response.json();
       if (!rows.length)
-        return null;
+        return [];
 
       return rows.map((data) => new Union(
         data.parent1,
