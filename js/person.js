@@ -64,16 +64,16 @@ export class Person {
       rootId = identities[0].id;
     if (!rootId)
       throw new Error("Invalid root ID.");
-
-    const response = await fetch("/identity/ids");
-    if (!response.ok)
-      return new Object();
-    const ids = await response.json();
     
     /** @type {Map<string, Person>} */
-    const people = Object.fromEntries(await Promise.all(ids.map(
-      async (id) => [id, new Person(await Identity.fromDB(id))],
-    )));
+    const people = new Object();
+    const todo = new Set([rootId]);
+    
+    for (const id of todo) {
+      const identity = await Identity.fromDB(id);
+      people[id] = new Person(identity);
+      (await Union.fromDB(id)).forEach(union => union.link(people));
+    };
     
     for (const data of unions)
       Union.fromJSON(data).link(people);
