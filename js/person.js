@@ -72,11 +72,10 @@ export class Person {
     for (const id of todo) {
       const identity = await Identity.fromDB(id);
       people[id] = new Person(identity);
-      (await Union.fromDB(id)).forEach(union => union.link(people));
+      const unions = await Union.fromDB(id);
+      console.log(unions);
+      unions.forEach(union => union.link(people));
     };
-    
-    for (const data of unions)
-      Union.fromJSON(data).link(people);
 
     return people[rootId];
   }
