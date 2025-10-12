@@ -17,7 +17,7 @@ function converter(row) {
   return {
     parent1: row.parent1,
     parent2: row.parent2 ?? null,
-    children: row.children?.split(',') ?? [],
+    children: (row.children ?? "").split(',').filter(x => x),
     dom: convertDate(row.domy, row.domm, row.domd),
     pom: row.pom ?? null,
     dod: convertDate(row.dody, row.dodm, row.dodd),
