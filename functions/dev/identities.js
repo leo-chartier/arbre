@@ -28,5 +28,5 @@ function converter(row) {
 }
 
 function convertDate(y, m, d) {
-  return [y, m, d].filter(v => v).join('/');
+  return [y, m, d].filter(v => v).join('/') || null;
 }

@@ -17,7 +17,7 @@ function converter(row) {
   return {
     parent1: row.parent1,
     parent2: row.parent2 ?? null,
-    children: row.children ?? "",
+    children: row.children?.split(',') ?? [],
     dom: convertDate(row.domy, row.domm, row.domd),
     pom: row.pom ?? null,
     dod: convertDate(row.dody, row.dodm, row.dodd),
@@ -25,5 +25,5 @@ function converter(row) {
 }
 
 function convertDate(y, m, d) {
-  return [y, m, d].filter(v => v).join('/');
+  return [y, m, d].filter(v => v).join('/') || null;
 }
